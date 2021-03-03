@@ -4,7 +4,7 @@ Java Chess Engine
 ---------------------
 
 Goals:
-- take input from lichess
+- take input from lichess(or any other chess site/gui)
 - create/update bitboards using lichess input
 - calculate legal moves for every piece on the board
 - evaluate all legal moves and pick best one(using MinMax and maybe Neural Network)
