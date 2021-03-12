@@ -63,7 +63,7 @@ public class ChessBoard {
 
          long kingReals = kingPsuedos & ~ownSideBitboard;
 
-         representation(kingReals);
+         printBitBoard(kingReals);
 
 
     }
@@ -108,7 +108,7 @@ public class ChessBoard {
         long knightPsuedos = spot1 | spot2 | spot3 | spot4 | spot5 | spot6| spot7 | spot8;
         long knightLegals = knightPsuedos & ~ownSideBitboard;
 
-        representation(knightLegals);
+        printBitBoard(knightLegals);
 
 
     }
@@ -117,45 +117,122 @@ public class ChessBoard {
     public void calculateWhitePawnMoves(long pawnLocation, long ownSideBitboard, long blackPieces,long allPieces, long[] lookuptables){
 
             long oneStep = pawnLocation << 8 & ~allPieces;
-            long twoSteps = ((oneStep & (StartPos.rankTables[0]<<16))<<8) & ~allPieces;
+            long twoSteps = ((oneStep & (Lookups.rankTables[0]<<16))<<8) & ~allPieces;
 
             long legalMoves = oneStep | twoSteps;
 
-            long pawnEastAttack = (pawnLocation & StartPos.fileTables[0])<<7;
-            long pawnWestAttack = (pawnLocation & StartPos.fileTables[StartPos.fileTables.length-2])<<9;
+            long pawnEastAttack = (pawnLocation & Lookups.fileTables[0])<<7;
+            long pawnWestAttack = (pawnLocation & Lookups.fileTables[Lookups.fileTables.length-2])<<9;
 
             long pawnAttacks = pawnEastAttack | pawnWestAttack;
             long pawnLegalAttacks = pawnAttacks & blackPieces;
 
             long whiteValidGeneral = pawnLegalAttacks | legalMoves;
 
-            representation(whiteValidGeneral);
+            printBitBoard(whiteValidGeneral);
 
 
 
     }
-    public void calculateBlackPawnMoves(long pawnLocation, long ownSideBitboard, long WhitePieces,long allPieces, long[] lookuptables){
+    public void calculateBlackPawnMoves(long pawnLocation, long ownSideBitboard, long WhitePieces,long allPieces, long[] lookupTables){
 
         long oneStep = pawnLocation >> 8 & ~allPieces;
-        long twoSteps = ((oneStep & (StartPos.rankTables[0]<<40))>>8) & ~allPieces;
+        long twoSteps = ((oneStep & (Lookups.rankTables[0]<<40))>>8) & ~allPieces;
 
         long legalMoves = oneStep | twoSteps;
 
-        long pawnEastAttack = (pawnLocation & StartPos.fileTables[0])>>9;
-        long pawnWestAttack = (pawnLocation & StartPos.fileTables[StartPos.fileTables.length-2])>>7;
+        long pawnEastAttack = (pawnLocation & Lookups.fileTables[0])>>9;
+        long pawnWestAttack = (pawnLocation & Lookups.fileTables[Lookups.fileTables.length-2])>>7;
 
         long pawnAttacks = pawnEastAttack | pawnWestAttack;
         long pawnLegalAttacks = pawnAttacks & WhitePieces;
 
         long blackValidGeneral = pawnLegalAttacks | legalMoves;
 
-        representation(blackValidGeneral);
+        printBitBoard(blackValidGeneral);
 
 
     }
 
+    public void calculateQueenMoves(long queenLocation, long ownSideBitBoard, long oppositeSidePieces, long[] lookupTables ){
 
-    public void representation(Long pieceBoard) {
+
+    }
+
+    public void initSlidingAttacks(){
+
+        //Goal: loop through each square and initialize three arrays: queenAttacks, rook attacks, bishop attack, for each square.
+        //will be used to initialize arrays used with magic bitboards.
+
+        Lookups.rookAttacks = new long[64];
+        Lookups.bishopAttacks = new long[64];
+        Lookups.queenAttacks = new long[64];
+
+
+        for(int i =0;i<64;i++){
+
+            //initializes rook attack masks------------------------
+
+            long rankR = 0xffL << (i & 56L);
+
+            long fileR =  0x0101010101010101L << (i & 7L);
+
+            long attacksR = rankR | fileR;
+
+            Lookups.rookAttacks[i] = (attacksR ^ (1L<<i));
+            //& Lookups.borderClip
+
+            //printBitBoard(Lookups.rookAttacks[i]);
+
+            //------------------------------------------------------
+
+            //initializes bishop attack masks-----------------------
+
+             long maindia = 0x8040201008040201L;
+            int diag =8*(i & 7) - (i & 56);
+            int nort = -diag & ( diag >> 31);
+            int sout =  diag & (-diag >> 31);
+            long diagonal = (maindia >> sout) << nort;
+
+
+            long amaindia = 0x0102040810204080L;
+            int adiag =56- 8*(i&7) - (i&56);
+            int anort = -adiag & ( adiag >> 31);
+            int asout =  adiag & (-adiag >> 31);
+            long adiagonal  = (amaindia >> asout) << anort;
+
+
+            long attacksB = adiagonal | diagonal;
+
+            Lookups.bishopAttacks[i] = (attacksB ^ (1L<<i));
+
+            //printBitBoard(Lookups.bishopAttacks[i]);
+
+
+            //------------------------------------------------------
+
+            //initializes queen masks by combining other attacks----
+
+            long attacksQ = attacksB | attacksR;
+
+            Lookups.queenAttacks[i] = (attacksQ ^ (1L<<i));
+
+            printBitBoard(Lookups.queenAttacks[i]);
+
+
+
+
+
+            //-------------------------------------------------------
+
+
+        }
+
+    }
+
+
+
+    public void printBitBoard(Long pieceBoard) {
 
         String full = "";
         //String square = rank *8 + file;

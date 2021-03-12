@@ -1,8 +1,8 @@
 package Chess;
 
-public class StartPos {
+public class Lookups {
 
-    public static long singleBit = 0b0000000000000000000000000000000000000000000000000000000000000001L;
+    public static long singleBit = 1L;
 
     /*public static long wPawns = 0b0000000000000000000000000000000000000000000000001111111100000000L;
     public static long wKnights = 0b0000000000000000000000000000000000000000000000000000000001000010L;
@@ -75,10 +75,28 @@ public class StartPos {
 
              */
 
-            //rank1 clip
+            //rank1 mask
             0b0000000000000000000000000000000000000000000000000000000011111111L
 
     };
+
+    public static long[] diagonalTables = {
+
+
+            //a to h diagonal
+            0x8040201008040201L
+
+    };
+
+    //public static long borderClip = 0b000000001111110011111100111111001111110011111100111111000000000L;
+
+
+    public static long[] rookAttacks;
+    public static long[] bishopAttacks;
+    public static long[] queenAttacks;
+
+
+
 
 
 }

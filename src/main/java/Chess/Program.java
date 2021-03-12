@@ -19,7 +19,15 @@ public class Program {
 
 
 
-        parser.fenToBitboards("5r2/2p2rb1/1pNp4/p2Pp1pk/2P1K3/PP3PP1/5R2/5R2 w - - 1 51");
+        parser.fenToBitboards("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
+
+
+
+
+        board.initSlidingAttacks();
+
+
+        //board.printBitBoard(Lookups.borderClip);
 
 
     }
