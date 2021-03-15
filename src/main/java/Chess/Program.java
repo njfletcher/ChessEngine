@@ -10,24 +10,32 @@ public class Program {
         ChessBoard board = new ChessBoard();
         FenParser parser = new FenParser();
 
-        board.gameStart();
 
-        //long bits =board.squareToBitboard("g8");
+        parser.fenToBitboards("5r2/2p2rb1/1pNp4/p2Pp1pk/2P1K3/PP3PP1/5R2/5R2 w - - 1 51");
 
-        //board.representation(bits);
-        //board.representation(StartPos.fileTables[0]);
+        long wPieces= Lookups.wPawns | Lookups.wKnights | Lookups.wKing | Lookups.wBishops | Lookups.wQueens| Lookups.wRooks;
+        long bPieces= Lookups.bPawns | Lookups.bKnights | Lookups.bKing | Lookups.bBishops | Lookups.bQueens| Lookups.bRooks;
 
-
-
-        parser.fenToBitboards("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
+        long allPieces= wPieces | bPieces;
 
 
 
+        board.printBitBoard(Lookups.bQueens);
+        board.printBitBoard(allPieces);
 
-        board.initSlidingAttacks();
+
+        board.printBitBoard(board.calculateQueenMoves(61,Lookups.wPieces,Lookups.bPieces,allPieces));
+
+
+
+
 
 
         //board.printBitBoard(Lookups.borderClip);
+
+        //board.printBitBoard(Lookups.rookAttacks[12]);
+        //board.printBitBoard(Lookups.bishopAttacks[12]);
+        //board.printBitBoard(Lookups.queenAttacks[12]);
 
 
     }

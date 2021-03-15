@@ -91,9 +91,9 @@ public class Lookups {
     //public static long borderClip = 0b000000001111110011111100111111001111110011111100111111000000000L;
 
 
-    public static long[] rookAttacks;
-    public static long[] bishopAttacks;
-    public static long[] queenAttacks;
+    public static long[] rookOccupancies;
+    public static long[] bishopOccupancies;
+    public static long[] queenOccupancies;
 
 
 
