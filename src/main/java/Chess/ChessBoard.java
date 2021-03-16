@@ -4,15 +4,8 @@ import java.util.Arrays;
 
 public class ChessBoard {
 
-    public ChessBoard() {
-
-
-    }
-
-    public void gameStart() {
-        //representation(StartPos.bKing);
-    }
-
+    //IDEA: MAKE EACH METHOD RETURN AN ARRAY. FIRST INDEX IS MOVES, SECOND IS ATTACK MASK.
+    //MAYBE JUST FOR PAWNS
 
     public long squareToBitboard(String uciPosition) {
 
@@ -84,9 +77,13 @@ public class ChessBoard {
 
         //8 possible moves for a knight, depending on which file you are on. Cannot move into a discovered check for your own king.
 
+        //checking to see if knight is on a or b file
         long spot1Clip = lookuptables[0] & lookuptables[1] & knightLocation;
+        //checking to see if knight is on a file
         long spot2Clip = lookuptables[0] & knightLocation;
+        //checking to see if knight is on h file
         long spot3Clip = lookuptables[lookuptables.length-2] & knightLocation;
+        //checking to see if knight is on g or h file
         long spot4Clip = lookuptables[3] & lookuptables[lookuptables.length-2] & knightLocation;
 
         long spot5Clip = spot4Clip;
@@ -117,11 +114,16 @@ public class ChessBoard {
     public void calculateWhitePawnMoves(long pawnLocation, long ownSideBitboard, long blackPieces,long allPieces, long[] lookuptables){
 
         long oneStep = pawnLocation << 8 & ~allPieces;
+
+        //checking if said pawn is on 2 rank
         long twoSteps = ((oneStep & (Lookups.rankTables[0]<<16))<<8) & ~allPieces;
 
         long legalMoves = oneStep | twoSteps;
 
+        //checking for if pawn is on right border
         long pawnEastAttack = (pawnLocation & Lookups.fileTables[0])<<7;
+
+        //checking for if pawn is on left border
         long pawnWestAttack = (pawnLocation & Lookups.fileTables[Lookups.fileTables.length-2])<<9;
 
         long pawnAttacks = pawnEastAttack | pawnWestAttack;
@@ -129,7 +131,7 @@ public class ChessBoard {
 
         long whiteValidGeneral = pawnLegalAttacks | legalMoves;
 
-        printBitBoard(whiteValidGeneral);
+        //printBitBoard(whiteValidGeneral);
 
 
 
@@ -137,11 +139,15 @@ public class ChessBoard {
     public void calculateBlackPawnMoves(long pawnLocation, long ownSideBitboard, long WhitePieces,long allPieces, long[] lookupTables){
 
         long oneStep = pawnLocation >> 8 & ~allPieces;
+
+        //checking for if said pawn is on 7th rank.
         long twoSteps = ((oneStep & (Lookups.rankTables[0]<<40))>>8) & ~allPieces;
 
         long legalMoves = oneStep | twoSteps;
 
+        //checking for if pawn is on left border
         long pawnEastAttack = (pawnLocation & Lookups.fileTables[0])>>9;
+        //checking for if pawn if on right border
         long pawnWestAttack = (pawnLocation & Lookups.fileTables[Lookups.fileTables.length-2])>>7;
 
         long pawnAttacks = pawnEastAttack | pawnWestAttack;
@@ -149,30 +155,30 @@ public class ChessBoard {
 
         long blackValidGeneral = pawnLegalAttacks | legalMoves;
 
-        printBitBoard(blackValidGeneral);
+        //printBitBoard(blackValidGeneral);
 
 
     }
 
-    public long calculateRookMoves(int square, long ownSideBitboard, long oppositePieces, long allPieces){
+    public long[] calculateRookMoves(int square, long ownSideBitboard, long oppositePieces, long allPieces){
 
         long moves= calcCross(square, allPieces);
 
-        return moves & ~allPieces;
+        return new long[]{moves & ~ownSideBitboard,(moves & ~ownSideBitboard) & oppositePieces};
     }
 
-    public long calculateBishopMoves(int square, long ownSide, long oppositePieces, long allPieces){
+    public long[] calculateBishopMoves(int square, long ownSide, long oppositePieces, long allPieces){
 
 
         long moves = calcDiagonal(square,allPieces);
 
-        return moves & ~allPieces;
+        return new long[]{moves & ~ownSide,(moves & ~ownSide) & oppositePieces};
 
 
 
     }
 
-    public long calculateQueenMoves(int square, long ownSideBitBoard, long oppositeSidePieces, long allPieces ){
+    public long[] calculateQueenMoves(int square, long ownSideBitBoard, long oppositeSidePieces, long allPieces ){
 
         long crosses = calcCross(square,allPieces);
 
@@ -181,7 +187,36 @@ public class ChessBoard {
         long moves = crosses | diagonals;
 
 
-        return moves & ~allPieces;
+        return new long[]{moves & ~ownSideBitBoard,(moves & ~ownSideBitBoard) & oppositeSidePieces };
+
+    }
+
+    public long[] calculateWKCastle(int kSquare, long kingOccupancy, long singleRookOccupancy){
+
+        kingOccupancy <<= 2;
+        singleRookOccupancy >>= 2;
+
+        return new long[]{kingOccupancy,singleRookOccupancy};
+    }
+    public long[] calculateWQCastle(int kSquare, long kingOccupancy, long singleRookOccupancy){
+        kingOccupancy >>= 2;
+        singleRookOccupancy <<=3;
+
+        return new long[]{kingOccupancy,singleRookOccupancy};
+
+    }
+    public long[] calculateBKCastle(int kSquare, long kingOccupancy, long singleRookOccupancy){
+        kingOccupancy <<= 2;
+        singleRookOccupancy >>=2;
+
+        return new long[]{kingOccupancy,singleRookOccupancy};
+
+    }
+    public long[] calculateBQCastle(int kSquare, long kingOccupancy, long singleRookOccupancy){
+        kingOccupancy >>= 2;
+        singleRookOccupancy <<=3;
+
+        return new long[]{kingOccupancy,singleRookOccupancy};
 
     }
 
@@ -197,28 +232,28 @@ public class ChessBoard {
         //System.out.println("Square: " + i + " tr: " + tr + " tf: " + tf + " target Square: " + (((tr+1) * 8) + (tf+1)));
 
         //northeast ray
-        for(r = tr+1, f =tf+1; r<=6 && f<=6;r++, f++){
+        for(r = tr+1, f =tf+1; r<=7 && f<=6;r++, f++){
             attacksB |= 1L << (r*8 +f);
             if(((1L << (r*8 +f)) & allPieces) != 0){
                 break;
             }
         }
 
-        for(r = tr+1, f =tf-1; r<=6 && f>=1;r++, f--){
+        for(r = tr+1, f =tf-1; r<=7 && f>=1;r++, f--){
             attacksB |= 1L << (r*8 +f);
             if(((1L << (r*8 +f)) & allPieces) != 0){
                 break;
             }
         }
 
-        for(r = tr-1, f =tf+1; r>=1 && f<=6;r--, f++){
+        for(r = tr-1, f =tf+1; r>=0 && f<=6;r--, f++){
             attacksB |= 1L << (r*8 +f);
             if(((1L << (r*8 +f)) & allPieces) != 0){
                 break;
             }
         }
 
-        for(r = tr-1, f =tf-1; r>=1 && f>=1;r--, f--) {
+        for(r = tr-1, f =tf-1; r>=0 && f>=1;r--, f--) {
             attacksB |= 1L << (r * 8 + f);
             if (((1L << (r * 8 + f)) & allPieces) != 0) {
                 break;
@@ -367,10 +402,23 @@ public class ChessBoard {
 
     }
 
+    public boolean checkForCheck(long kingBit, long attackMask){
+
+
+        if((kingBit & attackMask) !=0){
+            System.out.println("Check!");
+            return true;
+        }
+        else{
+            System.out.println("No Check!");
+            return false;
+        }
+    }
 
 
 
-    public void printBitBoard(Long pieceBoard) {
+
+    public static void printBitBoard(Long pieceBoard) {
 
         String full = "";
         //String square = rank *8 + file;

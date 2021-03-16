@@ -20,13 +20,26 @@ public class Program {
 
 
 
-        board.printBitBoard(Lookups.bQueens);
-        board.printBitBoard(allPieces);
+
+        ChessBoard.printBitBoard(allPieces);
+
+        ChessBoard.printBitBoard(Lookups.bKing);
+        ChessBoard.printBitBoard(board.calculateQueenMoves(55,Lookups.wPieces,bPieces,allPieces)[0]);
+        ChessBoard.printBitBoard(board.calculateQueenMoves(55,Lookups.wPieces,bPieces,allPieces)[1]);
 
 
-        board.printBitBoard(board.calculateQueenMoves(61,Lookups.wPieces,Lookups.bPieces,allPieces));
+
+        board.checkForCheck(Lookups.bKing, board.calculateQueenMoves(55,Lookups.wPieces,bPieces,allPieces)[1]);
+
+        ChessBoard.printBitBoard(board.squareToBitboard("e1"));
+        ChessBoard.printBitBoard(board.squareToBitboard("h1"));
 
 
+        board.calculateWKCastle(14,board.squareToBitboard("e1"),board.squareToBitboard("h1"));
+
+
+        ChessBoard.printBitBoard(board.calculateWKCastle(14,board.squareToBitboard("e1"),board.squareToBitboard("h1"))[0]);
+        ChessBoard.printBitBoard(board.calculateWKCastle(14,board.squareToBitboard("e1"),board.squareToBitboard("h1"))[1]);
 
 
 
@@ -38,5 +51,11 @@ public class Program {
         //board.printBitBoard(Lookups.queenAttacks[12]);
 
 
+    }
+    public enum Pieces {
+
+        //lowercase for black pieces, upper for white.
+
+        p,r,n,k,q,b,P,R,N,K,Q,B
     }
 }

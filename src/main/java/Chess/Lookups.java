@@ -2,35 +2,14 @@ package Chess;
 
 public class Lookups {
 
-    public static long singleBit = 1L;
 
-    /*public static long wPawns = 0b0000000000000000000000000000000000000000000000001111111100000000L;
-    public static long wKnights = 0b0000000000000000000000000000000000000000000000000000000001000010L;
-    public static long wKing =  0b0000000000000000000000000000000000000000000000000000000000010000L;
-    public static long wBishops = 0b0000000000000000000000000000000000000000000000000000000000100100L;
-    public static long wQueens = 0b0000000000000000000000000000000000000000000000000000000000001000L;
-    public static long wRooks = 0b0000000000000000000000000000000000000000000000000000000010000001L;
-
-     */
 
     public static long wPawns = 0L;
+    public static long wRooks = 0L;
     public static long wKnights = 0L;
     public static long wKing =  0L;
     public static long wBishops = 0L;
     public static long wQueens = 0L;
-    public static long wRooks = 0L;
-
-
-
-    //bit representation of black pieces.
-    /*public static long bPawns = 0b0000000011111111000000000000000000000000000000000000000000000000L;
-    public static long bKnights = 0b0100001000000000000000000000000000000000000000000000000000000000L;
-    public static long bKing = 0b0001000000000000000000000000000000000000000000000000000000000000L;
-    public static long bBishops= 0b0010010000000000000000000000000000000000000000000000000000000000L;
-    public static long bQueens = 0b0000100000000000000000000000000000000000000000000000000000000000L;
-    public static long bRooks = 0b1000000100000000000000000000000000000000000000000000000000000000L;
-
-     */
 
     public static long bPawns = 0L;
     public static long bKnights = 0L;
@@ -38,6 +17,15 @@ public class Lookups {
     public static long bBishops= 0L;
     public static long bQueens = 0L;
     public static long bRooks = 0L;
+
+
+    public static long[] pieces = {
+
+            bPawns, bRooks, bKnights, bKing, bQueens, bBishops,
+            wPawns, wRooks, wKnights, wKing, wQueens, wBishops
+
+    };
+
 
     public static long wPieces= wPawns | wKnights | wKing | wBishops | wQueens| wRooks;
     public static long bPieces= bPawns | bKnights | bKing | bBishops | bQueens| bRooks;
