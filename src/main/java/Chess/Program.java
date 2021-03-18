@@ -1,5 +1,7 @@
 package Chess;
 
+import java.util.ArrayList;
+
 public class Program {
 
 
@@ -13,42 +15,76 @@ public class Program {
 
         parser.fenToBitboards("5r2/2p2rb1/1pNp4/p2Pp1pk/2P1K3/PP3PP1/5R2/5R2 w - - 1 51");
 
-        long wPieces= Lookups.wPawns | Lookups.wKnights | Lookups.wKing | Lookups.wBishops | Lookups.wQueens| Lookups.wRooks;
-        long bPieces= Lookups.bPawns | Lookups.bKnights | Lookups.bKing | Lookups.bBishops | Lookups.bQueens| Lookups.bRooks;
+        long wPieces= GameState.wPawns | GameState.wKnights | GameState.wKing | GameState.wBishops | GameState.wQueens| GameState.wRooks;
+        long bPieces= GameState.bPawns | GameState.bKnights | GameState.bKing | GameState.bBishops | GameState.bQueens| GameState.bRooks;
 
         long allPieces= wPieces | bPieces;
 
 
 
 
-        ChessBoard.printBitBoard(allPieces);
+        ArrayList<Move> legalMoves = new ArrayList<Move>();
+       ArrayList<Integer> indices = ChessBoard.indexSetBits(GameState.bPawns);
 
-        ChessBoard.printBitBoard(Lookups.bKing);
-        ChessBoard.printBitBoard(board.calculateQueenMoves(55,Lookups.wPieces,bPieces,allPieces)[0]);
-        ChessBoard.printBitBoard(board.calculateQueenMoves(55,Lookups.wPieces,bPieces,allPieces)[1]);
+        for(Integer num : indices){
 
+            long[] moves =board.calculateBlackPawnMoves(num,bPieces,wPieces,allPieces);
+            ArrayList<Integer> moveIndices = ChessBoard.indexSetBits(moves[0]);
+            ArrayList<Integer> attackIndices = ChessBoard.indexSetBits(moves[1]);
 
+            for(Integer bit: moveIndices){
 
-        board.checkForCheck(Lookups.bKing, board.calculateQueenMoves(55,Lookups.wPieces,bPieces,allPieces)[1]);
+                long bRooksCopy = GameState.bPawns;
+                //System.out.println("Before: ");
+                //ChessBoard.printBitBoard(bRooksCopy);
 
-        ChessBoard.printBitBoard(board.squareToBitboard("e1"));
-        ChessBoard.printBitBoard(board.squareToBitboard("h1"));
-
-
-        board.calculateWKCastle(14,board.squareToBitboard("e1"),board.squareToBitboard("h1"));
-
-
-        ChessBoard.printBitBoard(board.calculateWKCastle(14,board.squareToBitboard("e1"),board.squareToBitboard("h1"))[0]);
-        ChessBoard.printBitBoard(board.calculateWKCastle(14,board.squareToBitboard("e1"),board.squareToBitboard("h1"))[1]);
+                 bRooksCopy &= ~(1L<<num);
+                 bRooksCopy |= (1L<<bit);
 
 
 
+                 //System.out.println("after: ");
+                 //ChessBoard.printBitBoard(bRooksCopy);
 
-        //board.printBitBoard(Lookups.borderClip);
+                 if(!(board.checkForCheck(GameState.bKing, board.generateSideAttackMask(0L)))){
+                     legalMoves.add(new Move(num, bit));
+                 }
+            }
+            for(Integer bit: attackIndices){
 
-        //board.printBitBoard(Lookups.rookAttacks[12]);
-        //board.printBitBoard(Lookups.bishopAttacks[12]);
-        //board.printBitBoard(Lookups.queenAttacks[12]);
+                long bRooksCopy = GameState.bPawns;
+                System.out.println("Before: ");
+                ChessBoard.printBitBoard(bRooksCopy);
+
+                bRooksCopy &= ~(1L<<num);
+                bRooksCopy |= (1L<<bit);
+
+                System.out.println("after: ");
+                ChessBoard.printBitBoard(bRooksCopy);
+
+                for(int i =6; i<12;i++){
+                    if((GameState.pieces[i] & (1L<<bit)) !=0){
+                        long bitboardCopy = GameState.pieces[i];
+                        bitboardCopy &= ~(1L<<num);
+
+                    }
+                }
+            }
+        }
+
+
+
+
+       for(Move m: legalMoves){
+          System.out.println(" from: " + m.squareFrom);
+           System.out.println("-----------------------------");
+           System.out.println(" to: " + m.squareTo);
+
+        }
+
+
+
+
 
 
     }
@@ -58,4 +94,5 @@ public class Program {
 
         p,r,n,k,q,b,P,R,N,K,Q,B
     }
+
 }

@@ -1,5 +1,6 @@
 package Chess;
 
+
 public class FenParser {
 
 
@@ -31,40 +32,40 @@ public class FenParser {
                 char letter = rank.charAt(i);
                 switch (letter) {
                     case 'p':
-                        Lookups.bPawns |= 1L << counter;
+                        GameState.bPawns |= 1L << counter;
                         break;
                     case 'r':
-                        Lookups.bRooks |= 1L << counter;
+                        GameState.bRooks |= 1L << counter;
                         break;
                     case 'n':
-                        Lookups.bKnights |= 1L << counter;
+                        GameState.bKnights |= 1L << counter;
                         break;
                     case 'b':
-                        Lookups.bBishops |= 1L << counter;
+                        GameState.bBishops |= 1L << counter;
                         break;
                     case 'q':
-                        Lookups.bQueens |= 1L << counter;
+                        GameState.bQueens |= 1L << counter;
                         break;
                     case 'k':
-                        Lookups.bKing |= 1L << counter;
+                        GameState.bKing |= 1L << counter;
                         break;
                     case 'P':
-                        Lookups.wPawns |= 1L << counter;
+                        GameState.wPawns |= 1L << counter;
                         break;
                     case 'R':
-                        Lookups.wRooks |= 1L << counter;
+                        GameState.wRooks |= 1L << counter;
                         break;
                     case 'N':
-                        Lookups.wKnights |= 1L << counter;
+                        GameState.wKnights |= 1L << counter;
                         break;
                     case 'B':
-                        Lookups.wBishops |= 1L << counter;
+                        GameState.wBishops |= 1L << counter;
                         break;
                     case 'Q':
-                        Lookups.wQueens |= 1L << counter;
+                        GameState.wQueens |= 1L << counter;
                         break;
                     case 'K':
-                        Lookups.wKing |= 1L << counter;
+                        GameState.wKing |= 1L << counter;
                         break;
                     case '/':
                         counter++;

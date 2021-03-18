@@ -1,5 +1,6 @@
 package Chess;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 
 public class ChessBoard {
@@ -10,7 +11,6 @@ public class ChessBoard {
     public long squareToBitboard(String uciPosition) {
 
         //GOAL: take incoming board position and turn it into the required bitboards/update existing bitboards.
-        //until done just use static starting positions.
 
 
         System.out.println(boardSqs.getBitofSquare(uciPosition));
@@ -23,7 +23,7 @@ public class ChessBoard {
 
 
 
-    public void calculateKingMoves(long kingBitBoard, long ownSideBitboard, long[] lookupTables){
+    public long[] calculateKingMoves(int square, long ownSideBitboard,long enemySide, long allPieces, long[] lookupTables){
 
         /*
         [0, 0, 0, 0, 0, 0, 0, 0]
@@ -39,6 +39,7 @@ public class ChessBoard {
 
         //8 possible moves for a king from a given position, unless on a border, under check, or attempting to move into a piece that is
         // under the watch of another piece.
+         long kingBitBoard =1L<< square;
          long kingAFile = kingBitBoard & lookupTables[0];
          long kingHFile = kingBitBoard & lookupTables[lookupTables.length-2];
 
@@ -54,14 +55,17 @@ public class ChessBoard {
 
          long kingPsuedos = move1 | move2| move3| move4| move5| move6| move7| move8;
 
-         long kingReals = kingPsuedos & ~ownSideBitboard;
+         long kingMoves = kingPsuedos & ~allPieces;
+         long kingAttacks = kingPsuedos & enemySide;
 
-         printBitBoard(kingReals);
+        return new long[]{kingMoves,kingAttacks};
+
+
 
 
     }
 
-    public void calculateKnightMoves(long knightLocation, long ownSideBitboard, long[] lookuptables){
+    public long[] calculateKnightMoves(int square, long ownSideBitboard,long enemySide, long allPieces, long[] lookuptables){
 
                 /*
         [0, 0, 0, 0, 0, 0, 0, 0]
@@ -76,6 +80,8 @@ public class ChessBoard {
          */
 
         //8 possible moves for a knight, depending on which file you are on. Cannot move into a discovered check for your own king.
+
+        long knightLocation = 1L<<square;
 
         //checking to see if knight is on a or b file
         long spot1Clip = lookuptables[0] & lookuptables[1] & knightLocation;
@@ -103,15 +109,19 @@ public class ChessBoard {
 
 
         long knightPsuedos = spot1 | spot2 | spot3 | spot4 | spot5 | spot6| spot7 | spot8;
-        long knightLegals = knightPsuedos & ~ownSideBitboard;
+        long knightLegals = knightPsuedos & ~allPieces;
+        long knightAttacks = knightPsuedos & enemySide;
 
-        printBitBoard(knightLegals);
+
+        return new long[]{knightLegals,knightAttacks};
 
 
     }
 
 
-    public void calculateWhitePawnMoves(long pawnLocation, long ownSideBitboard, long blackPieces,long allPieces, long[] lookuptables){
+    public long[] calculateWhitePawnMoves(int square, long ownSideBitboard, long blackPieces,long allPieces){
+
+        long pawnLocation = 1L << square;
 
         long oneStep = pawnLocation << 8 & ~allPieces;
 
@@ -131,12 +141,16 @@ public class ChessBoard {
 
         long whiteValidGeneral = pawnLegalAttacks | legalMoves;
 
-        //printBitBoard(whiteValidGeneral);
+        return new long[]{legalMoves,pawnLegalAttacks};
+
+
 
 
 
     }
-    public void calculateBlackPawnMoves(long pawnLocation, long ownSideBitboard, long WhitePieces,long allPieces, long[] lookupTables){
+    public long[] calculateBlackPawnMoves(int square, long ownSideBitboard, long WhitePieces,long allPieces){
+
+        long pawnLocation = 1L <<square;
 
         long oneStep = pawnLocation >> 8 & ~allPieces;
 
@@ -155,7 +169,9 @@ public class ChessBoard {
 
         long blackValidGeneral = pawnLegalAttacks | legalMoves;
 
-        //printBitBoard(blackValidGeneral);
+        return new long[]{legalMoves,pawnLegalAttacks};
+
+
 
 
     }
@@ -164,7 +180,7 @@ public class ChessBoard {
 
         long moves= calcCross(square, allPieces);
 
-        return new long[]{moves & ~ownSideBitboard,(moves & ~ownSideBitboard) & oppositePieces};
+        return new long[]{moves & ~allPieces,(moves & ~ownSideBitboard) & oppositePieces};
     }
 
     public long[] calculateBishopMoves(int square, long ownSide, long oppositePieces, long allPieces){
@@ -172,7 +188,7 @@ public class ChessBoard {
 
         long moves = calcDiagonal(square,allPieces);
 
-        return new long[]{moves & ~ownSide,(moves & ~ownSide) & oppositePieces};
+        return new long[]{moves & ~allPieces,(moves & ~ownSide) & oppositePieces};
 
 
 
@@ -187,7 +203,7 @@ public class ChessBoard {
         long moves = crosses | diagonals;
 
 
-        return new long[]{moves & ~ownSideBitBoard,(moves & ~ownSideBitBoard) & oppositeSidePieces };
+        return new long[]{moves & ~allPieces,(moves & ~ownSideBitBoard) & oppositeSidePieces };
 
     }
 
@@ -306,102 +322,6 @@ public class ChessBoard {
     }
 
 
-
-    public void findSignificantSetBits(long bitboard){
-
-        int leastSig = -1;
-        int mostSig= -1;
-
-        
-
-
-    }
-    public void initSlidingOMasks(){
-
-        //Goal: loop through each square and initialize three arrays: queenAttacks, rook attacks, bishop attack, for each square.
-        //will be used to initialize arrays used with magic bitboards.
-
-        Lookups.rookOccupancies = new long[64];
-        Lookups.bishopOccupancies = new long[64];
-        Lookups.queenOccupancies = new long[64];
-
-
-        for(int i =0;i<64;i++){
-
-            int r,f;
-            int tr = i /8;
-            int tf = i %8;
-
-
-
-            //initializes rook attack masks------------------------
-
-            long attacksR = 0L;
-
-            //System.out.println("Square: " + i + " tr: " + tr + " tf: " + tf + " target Square: " + (((tr+1) * 8) + (tf+1)));
-
-            //northeast ray
-            for(r = tr+1; r<=7 ;r++){
-                attacksR |= 1L << (r*8 +tf);
-            }
-
-            for(r = tr-1; r>=0;r--){
-                attacksR |= 1L << (r*8 +tf);
-            }
-
-            for(f = tf+1; f<=7;f++){
-                attacksR |= 1L << (tr*8 +f);
-            }
-            for(f = tf-1; f>=0;f--){
-                attacksR |= 1L << (tr*8 +f);
-            }
-
-            Lookups.rookOccupancies[i] = (attacksR);
-
-            //printBitBoard(attacksR);
-
-
-            //initializes bishop attack masks-----------------------
-
-            long attacksB = 0L;
-
-            //System.out.println("Square: " + i + " tr: " + tr + " tf: " + tf + " target Square: " + (((tr+1) * 8) + (tf+1)));
-
-            //northeast ray
-            for(r = tr+1, f =tf+1; r<=7 && f<=6;r++, f++){
-                attacksB |= 1L << (r*8 +f);
-            }
-
-            for(r = tr+1, f =tf-1; r<=7 && f>=1;r++, f--){
-                attacksB |= 1L << (r*8 +f);
-            }
-
-            for(r = tr-1, f =tf+1; r>=0 && f<=6;r--, f++){
-                attacksB |= 1L << (r*8 +f);
-            }
-
-            for(r = tr-1, f =tf-1; r>=0 && f>=1;r--, f--){
-                attacksB |= 1L << (r*8 +f);
-            }
-
-
-            Lookups.bishopOccupancies[i] = (attacksB);
-
-            //printBitBoard(attacksB);
-
-
-            //initializes queen masks by combining other attacks----
-
-            long attacksQ = attacksB | attacksR;
-
-            Lookups.queenOccupancies[i] = (attacksQ);
-
-            //printBitBoard(attacksQ);
-
-        }
-
-    }
-
     public boolean checkForCheck(long kingBit, long attackMask){
 
 
@@ -413,6 +333,121 @@ public class ChessBoard {
             System.out.println("No Check!");
             return false;
         }
+    }
+
+    public long generateSideAttackMask(long sideToMove){
+
+        if(sideToMove ==1L){
+
+            long attackMap =0L;
+
+            ArrayList<Integer> indices = indexSetBits(GameState.bPawns);
+
+            for(Integer num: indices){
+                long[] pawnAttacks = calculateBlackPawnMoves(num,GameState.updatePiecesSum()[0],GameState.updatePiecesSum()[1],GameState.updatePiecesSum()[2]);
+                attackMap |= pawnAttacks[1];
+            }
+
+            indices = indexSetBits(GameState.bRooks);
+            for(Integer num: indices){
+                long[] rookAttacks = calculateRookMoves(num,GameState.updatePiecesSum()[0],GameState.updatePiecesSum()[1],GameState.updatePiecesSum()[2]);
+                attackMap |= rookAttacks[1];
+            }
+
+
+            indices = indexSetBits(GameState.bKnights);
+            for(Integer num: indices){
+                long[] knightAttacks = calculateKnightMoves(num,GameState.updatePiecesSum()[0],GameState.updatePiecesSum()[1],GameState.updatePiecesSum()[2],Lookups.fileTables);
+                attackMap |= knightAttacks[1];
+            }
+
+
+            indices = indexSetBits(GameState.bKing);
+            for(Integer num: indices){
+                long[] kingAttacks = calculateKingMoves(num,GameState.updatePiecesSum()[0],GameState.updatePiecesSum()[1],GameState.updatePiecesSum()[2],Lookups.fileTables);
+                attackMap |= kingAttacks[1];
+            }
+
+            indices = indexSetBits(GameState.bQueens);
+            for(Integer num: indices){
+                long[] queenAttacks = calculateQueenMoves(num,GameState.updatePiecesSum()[0],GameState.updatePiecesSum()[1],GameState.updatePiecesSum()[2]);
+                attackMap |= queenAttacks[1];
+            }
+
+            indices = indexSetBits(GameState.bBishops);
+            for(Integer num: indices){
+                long[] bishopAttacks = calculateBishopMoves(num,GameState.updatePiecesSum()[0],GameState.updatePiecesSum()[1],GameState.updatePiecesSum()[2]);
+                attackMap |= bishopAttacks[1];
+            }
+
+            return attackMap;
+
+
+        }
+        else{
+            long attackMap =0L;
+
+            ArrayList<Integer> indices = indexSetBits(GameState.wPawns);
+
+            for(Integer num: indices){
+                long[] pawnAttacks = calculateWhitePawnMoves(num,GameState.updatePiecesSum()[1],GameState.updatePiecesSum()[0],GameState.updatePiecesSum()[2]);
+                attackMap |= pawnAttacks[1];
+            }
+
+            indices = indexSetBits(GameState.wRooks);
+            for(Integer num: indices){
+                long[] rookAttacks = calculateRookMoves(num,GameState.updatePiecesSum()[1],GameState.updatePiecesSum()[0],GameState.updatePiecesSum()[2]);
+                attackMap |= rookAttacks[1];
+            }
+
+
+            indices = indexSetBits(GameState.wKnights);
+            for(Integer num: indices){
+                long[] knightAttacks = calculateKnightMoves(num,GameState.updatePiecesSum()[1],GameState.updatePiecesSum()[0],GameState.updatePiecesSum()[2],Lookups.fileTables);
+                attackMap |= knightAttacks[1];
+            }
+
+
+            indices = indexSetBits(GameState.wKing);
+            for(Integer num: indices){
+                long[] kingAttacks = calculateKingMoves(num,GameState.updatePiecesSum()[1],GameState.updatePiecesSum()[0],GameState.updatePiecesSum()[2],Lookups.fileTables);
+                attackMap |= kingAttacks[1];
+            }
+
+            indices = indexSetBits(GameState.wQueens);
+            for(Integer num: indices){
+                long[] queenAttacks = calculateQueenMoves(num,GameState.updatePiecesSum()[1],GameState.updatePiecesSum()[0],GameState.updatePiecesSum()[2]);
+                attackMap |= queenAttacks[1];
+            }
+
+            indices = indexSetBits(GameState.wBishops);
+            for(Integer num: indices){
+                long[] bishopAttacks = calculateBishopMoves(num,GameState.updatePiecesSum()[1],GameState.updatePiecesSum()[0],GameState.updatePiecesSum()[2]);
+                attackMap |= bishopAttacks[1];
+            }
+
+            return attackMap;
+
+        }
+
+    }
+
+    public static ArrayList<Integer> indexSetBits(long bitboard){
+
+        ArrayList<Integer> indices = new ArrayList<>();
+
+
+        int count =0;
+        while(bitboard >0){
+            if((bitboard & 1L) == 1){
+                indices.add(count);
+
+            }
+            bitboard >>= 1L;
+            count++;
+        }
+
+        return indices;
     }
 
 

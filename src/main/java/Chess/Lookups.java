@@ -3,36 +3,6 @@ package Chess;
 public class Lookups {
 
 
-
-    public static long wPawns = 0L;
-    public static long wRooks = 0L;
-    public static long wKnights = 0L;
-    public static long wKing =  0L;
-    public static long wBishops = 0L;
-    public static long wQueens = 0L;
-
-    public static long bPawns = 0L;
-    public static long bKnights = 0L;
-    public static long bKing = 0L;
-    public static long bBishops= 0L;
-    public static long bQueens = 0L;
-    public static long bRooks = 0L;
-
-
-    public static long[] pieces = {
-
-            bPawns, bRooks, bKnights, bKing, bQueens, bBishops,
-            wPawns, wRooks, wKnights, wKing, wQueens, wBishops
-
-    };
-
-
-    public static long wPieces= wPawns | wKnights | wKing | wBishops | wQueens| wRooks;
-    public static long bPieces= bPawns | bKnights | bKing | bBishops | bQueens| bRooks;
-
-    public static long allPieces= wPieces | bPieces;
-
-
     public static long[] fileTables = {
 
             // used mainly for checking if a piece is a on a border, therefore nulling any
