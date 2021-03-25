@@ -2,27 +2,22 @@ package Chess;
 
 public class GameState {
 
-    public static long wPawns = 0L;
-    public static long wRooks = 0L;
-    public static long wKnights = 0L;
-    public static long wKing =  0L;
-    public static long wBishops = 0L;
-    public static long wQueens = 0L;
+    public static long wPawns;
+    public static long wRooks;
+    public static long wKnights;
+    public static long wKing;
+    public static long wBishops;
+    public static long wQueens;
 
-    public static long bPawns = 0L;
-    public static long bKnights = 0L;
-    public static long bKing = 0L;
-    public static long bBishops= 0L;
-    public static long bQueens = 0L;
-    public static long bRooks = 0L;
+    public static long bPawns;
+    public static long bKnights;
+    public static long bKing;
+    public static long bBishops;
+    public static long bQueens;
+    public static long bRooks;
 
 
-    public static long[] pieces = {
 
-            bPawns, bRooks, bKnights, bKing, bQueens, bBishops,
-            wPawns, wRooks, wKnights, wKing, wQueens, wBishops
-
-    };
 
     public static long[] updatePiecesSum(){
         long bPieces= GameState.bPawns | GameState.bKnights | GameState.bKing | GameState.bBishops | GameState.bQueens| GameState.bRooks;
@@ -32,6 +27,18 @@ public class GameState {
         long allPieces= wPieces | bPieces;
 
         return new long[]{bPieces, wPieces,allPieces};
+
+    }
+
+    public static long[] generatePiecesArray(){
+        long[] pieces = {
+
+                bPawns, bRooks, bKnights, bKing, bQueens, bBishops,
+                wPawns, wRooks, wKnights, wKing, wQueens, wBishops
+
+        };
+
+        return pieces;
 
     }
 

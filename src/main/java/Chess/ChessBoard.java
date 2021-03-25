@@ -1,12 +1,12 @@
 package Chess;
 
+
+
 import java.util.ArrayList;
 import java.util.Arrays;
 
 public class ChessBoard {
 
-    //IDEA: MAKE EACH METHOD RETURN AN ARRAY. FIRST INDEX IS MOVES, SECOND IS ATTACK MASK.
-    //MAYBE JUST FOR PAWNS
 
     public long squareToBitboard(String uciPosition) {
 
@@ -23,7 +23,7 @@ public class ChessBoard {
 
 
 
-    public long[] calculateKingMoves(int square, long ownSideBitboard,long enemySide, long allPieces, long[] lookupTables){
+    public long[] calculateKingMoves(int square, long ownSideBitboard,long enemySide, long allPieces){
 
         /*
         [0, 0, 0, 0, 0, 0, 0, 0]
@@ -40,8 +40,8 @@ public class ChessBoard {
         //8 possible moves for a king from a given position, unless on a border, under check, or attempting to move into a piece that is
         // under the watch of another piece.
          long kingBitBoard =1L<< square;
-         long kingAFile = kingBitBoard & lookupTables[0];
-         long kingHFile = kingBitBoard & lookupTables[lookupTables.length-2];
+         long kingAFile = kingBitBoard & Lookups.fileTables[0];
+         long kingHFile = kingBitBoard & Lookups.fileTables[Lookups.fileTables.length-2];
 
          long move1 = kingAFile <<7;
          long move2 = kingBitBoard <<8;
@@ -65,7 +65,7 @@ public class ChessBoard {
 
     }
 
-    public long[] calculateKnightMoves(int square, long ownSideBitboard,long enemySide, long allPieces, long[] lookuptables){
+    public long[] calculateKnightMoves(int square, long ownSideBitboard,long enemySide, long allPieces){
 
                 /*
         [0, 0, 0, 0, 0, 0, 0, 0]
@@ -84,13 +84,13 @@ public class ChessBoard {
         long knightLocation = 1L<<square;
 
         //checking to see if knight is on a or b file
-        long spot1Clip = lookuptables[0] & lookuptables[1] & knightLocation;
+        long spot1Clip = Lookups.fileTables[0] & Lookups.fileTables[1] & knightLocation;
         //checking to see if knight is on a file
-        long spot2Clip = lookuptables[0] & knightLocation;
+        long spot2Clip = Lookups.fileTables[0] & knightLocation;
         //checking to see if knight is on h file
-        long spot3Clip = lookuptables[lookuptables.length-2] & knightLocation;
+        long spot3Clip = Lookups.fileTables[Lookups.fileTables.length-2] & knightLocation;
         //checking to see if knight is on g or h file
-        long spot4Clip = lookuptables[3] & lookuptables[lookuptables.length-2] & knightLocation;
+        long spot4Clip = Lookups.fileTables[3] & Lookups.fileTables[Lookups.fileTables.length-2] & knightLocation;
 
         long spot5Clip = spot4Clip;
         long spot6Clip = spot3Clip;
@@ -111,6 +111,9 @@ public class ChessBoard {
         long knightPsuedos = spot1 | spot2 | spot3 | spot4 | spot5 | spot6| spot7 | spot8;
         long knightLegals = knightPsuedos & ~allPieces;
         long knightAttacks = knightPsuedos & enemySide;
+        String s = Long.toString(knightLegals);
+        String s1 = Long.toString(knightAttacks);
+
 
 
         return new long[]{knightLegals,knightAttacks};
@@ -326,16 +329,18 @@ public class ChessBoard {
 
 
         if((kingBit & attackMask) !=0){
-            System.out.println("Check!");
+
             return true;
         }
         else{
-            System.out.println("No Check!");
+
             return false;
         }
     }
 
-    public long generateSideAttackMask(long sideToMove){
+
+
+    public long generateSideAttackMask(long sideToMove, long black, long white, long all){
 
         if(sideToMove ==1L){
 
@@ -343,42 +348,60 @@ public class ChessBoard {
 
             ArrayList<Integer> indices = indexSetBits(GameState.bPawns);
 
+
             for(Integer num: indices){
-                long[] pawnAttacks = calculateBlackPawnMoves(num,GameState.updatePiecesSum()[0],GameState.updatePiecesSum()[1],GameState.updatePiecesSum()[2]);
+                long[] pawnAttacks = calculateBlackPawnMoves(num,black,white,all);
                 attackMap |= pawnAttacks[1];
+                
+
             }
+
+
 
             indices = indexSetBits(GameState.bRooks);
             for(Integer num: indices){
-                long[] rookAttacks = calculateRookMoves(num,GameState.updatePiecesSum()[0],GameState.updatePiecesSum()[1],GameState.updatePiecesSum()[2]);
+                long[] rookAttacks = calculateRookMoves(num,black,white,all);
                 attackMap |= rookAttacks[1];
+
+
             }
 
 
             indices = indexSetBits(GameState.bKnights);
             for(Integer num: indices){
-                long[] knightAttacks = calculateKnightMoves(num,GameState.updatePiecesSum()[0],GameState.updatePiecesSum()[1],GameState.updatePiecesSum()[2],Lookups.fileTables);
+                long[] knightAttacks = calculateKnightMoves(num,black,white,all);
                 attackMap |= knightAttacks[1];
+                ChessBoard.printBitBoard(attackMap);
+
             }
 
 
             indices = indexSetBits(GameState.bKing);
             for(Integer num: indices){
-                long[] kingAttacks = calculateKingMoves(num,GameState.updatePiecesSum()[0],GameState.updatePiecesSum()[1],GameState.updatePiecesSum()[2],Lookups.fileTables);
+                long[] kingAttacks = calculateKingMoves(num,black,white,all);
                 attackMap |= kingAttacks[1];
+                ChessBoard.printBitBoard(attackMap);
+
             }
 
             indices = indexSetBits(GameState.bQueens);
+
             for(Integer num: indices){
-                long[] queenAttacks = calculateQueenMoves(num,GameState.updatePiecesSum()[0],GameState.updatePiecesSum()[1],GameState.updatePiecesSum()[2]);
+                long[] queenAttacks = calculateQueenMoves(num,black,white,all);
                 attackMap |= queenAttacks[1];
+                ChessBoard.printBitBoard(attackMap);
+
             }
 
             indices = indexSetBits(GameState.bBishops);
             for(Integer num: indices){
-                long[] bishopAttacks = calculateBishopMoves(num,GameState.updatePiecesSum()[0],GameState.updatePiecesSum()[1],GameState.updatePiecesSum()[2]);
+                long[] bishopAttacks = calculateBishopMoves(num,black,white,all);
                 attackMap |= bishopAttacks[1];
+                ChessBoard.printBitBoard(attackMap);
+
             }
+
+
 
             return attackMap;
 
@@ -390,39 +413,45 @@ public class ChessBoard {
             ArrayList<Integer> indices = indexSetBits(GameState.wPawns);
 
             for(Integer num: indices){
-                long[] pawnAttacks = calculateWhitePawnMoves(num,GameState.updatePiecesSum()[1],GameState.updatePiecesSum()[0],GameState.updatePiecesSum()[2]);
+                long[] pawnAttacks = calculateWhitePawnMoves(num,white,black,all);
                 attackMap |= pawnAttacks[1];
             }
 
             indices = indexSetBits(GameState.wRooks);
             for(Integer num: indices){
-                long[] rookAttacks = calculateRookMoves(num,GameState.updatePiecesSum()[1],GameState.updatePiecesSum()[0],GameState.updatePiecesSum()[2]);
+                long[] rookAttacks = calculateRookMoves(num,white,black,all);
                 attackMap |= rookAttacks[1];
             }
 
 
             indices = indexSetBits(GameState.wKnights);
             for(Integer num: indices){
-                long[] knightAttacks = calculateKnightMoves(num,GameState.updatePiecesSum()[1],GameState.updatePiecesSum()[0],GameState.updatePiecesSum()[2],Lookups.fileTables);
+                long[] knightAttacks = calculateKnightMoves(num,white,black,all);
                 attackMap |= knightAttacks[1];
             }
 
 
             indices = indexSetBits(GameState.wKing);
             for(Integer num: indices){
-                long[] kingAttacks = calculateKingMoves(num,GameState.updatePiecesSum()[1],GameState.updatePiecesSum()[0],GameState.updatePiecesSum()[2],Lookups.fileTables);
+                long[] kingAttacks = calculateKingMoves(num,white,black,all);
                 attackMap |= kingAttacks[1];
             }
 
             indices = indexSetBits(GameState.wQueens);
+
             for(Integer num: indices){
-                long[] queenAttacks = calculateQueenMoves(num,GameState.updatePiecesSum()[1],GameState.updatePiecesSum()[0],GameState.updatePiecesSum()[2]);
+                long[] queenAttacks = calculateQueenMoves(num,white,black,all);
+
                 attackMap |= queenAttacks[1];
+
+
             }
 
             indices = indexSetBits(GameState.wBishops);
             for(Integer num: indices){
-                long[] bishopAttacks = calculateBishopMoves(num,GameState.updatePiecesSum()[1],GameState.updatePiecesSum()[0],GameState.updatePiecesSum()[2]);
+                long[] bishopAttacks = calculateBishopMoves(num,white,black,all);
+
+
                 attackMap |= bishopAttacks[1];
             }
 
@@ -432,20 +461,23 @@ public class ChessBoard {
 
     }
 
-    public static ArrayList<Integer> indexSetBits(long bitboard){
+
+
+    public static ArrayList<Integer> indexSetBits(Long bitboard){
 
         ArrayList<Integer> indices = new ArrayList<>();
 
+        String bits = padZeros(bitboard);
 
-        int count =0;
-        while(bitboard >0){
-            if((bitboard & 1L) == 1){
+        int count =63;
+
+        for(int i = 0; i<bits.length();i++){
+            if(bits.charAt(i) == '1'){
                 indices.add(count);
-
             }
-            bitboard >>= 1L;
-            count++;
+            count--;
         }
+
 
         return indices;
     }
@@ -490,6 +522,25 @@ public class ChessBoard {
             System.out.println(Arrays.toString(array));
 
         }
+    }
+    public  static String padZeros(long bitBoard){
+
+        String full = "";
+        //String square = rank *8 + file;
+        String s = Long.toBinaryString(bitBoard);
+
+        //System.out.println(64 - Long.toBinaryString(pieceBoard).length());
+
+        if (Long.toBinaryString(bitBoard).length() == 64) {
+            full = Long.toBinaryString(bitBoard);
+            s = full;
+        } else {
+
+            full = String.format("%0" + (64 - Long.toBinaryString(bitBoard).length()) + 'd', 0);
+            s = full + "" + s;
+
+        }
+        return s;
     }
 
 
