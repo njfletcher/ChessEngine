@@ -461,6 +461,98 @@ public class ChessBoard {
 
     }
 
+    public static int evaluatePos(long[] bitboards, long sideToMove){
+
+        //pawns worth 1, knights/bishops worth 3, rook worth 5, queen worth 9, checkmate worth 10000
+
+
+        int evaluationWhite = 0;
+        int evaluationBlack = 0;
+
+
+
+        //simple counter based only on assigned value for each piece.
+
+        //black pieces
+        for(int i = 0; i<6;i++){
+            int numP = indexSetBits(bitboards[i]).size();
+
+
+
+            switch(i){
+                case(0): evaluationBlack += numP;
+                break;
+
+                case(1): evaluationBlack += numP * 5;
+                break;
+
+                case(2): evaluationBlack += numP * 3;
+                break;
+
+                case(3): evaluationBlack += numP;
+                break;
+
+                case(4): evaluationBlack += numP * 9;
+                break;
+
+                case(5): evaluationBlack += numP * 3;
+                break;
+            }
+
+            //System.out.println(evaluationBlack);
+        }
+
+        //white pieces
+        for(int j = 6; j<12;j++){
+
+            int numP = indexSetBits(bitboards[j]).size();
+
+            switch(j){
+                case(6): evaluationWhite += numP;
+                break;
+
+                case(7): evaluationWhite += numP * 5;
+                break;
+
+                case(8): evaluationWhite += numP * 3;
+                break;
+
+                case(9): evaluationWhite += numP;
+                break;
+
+                case(10): evaluationWhite += numP * 9;
+                break;
+
+                case(11): evaluationWhite += numP * 3;
+                break;
+            }
+
+
+
+        }
+
+
+
+        //check to see if knights are on a or h files, which is punished.
+
+        evaluationWhite -= indexSetBits(bitboards[8] & (Lookups.fileTables[Lookups.fileTables.length-1] & (Lookups.fileTables[Lookups.fileTables.length-1]<<7))).size();
+        evaluationBlack -= indexSetBits(bitboards[2] & (Lookups.fileTables[Lookups.fileTables.length-1] & (Lookups.fileTables[Lookups.fileTables.length-1]<<7))).size();
+
+
+
+        //check for centralized/ developed pawns.
+        evaluationWhite += indexSetBits(bitboards[6] & Lookups.evalTables[0]).size();
+        evaluationBlack += indexSetBits(bitboards[0] & Lookups.evalTables[0]).size();
+
+
+
+
+
+
+
+        return evaluationBlack -evaluationWhite;
+    }
+
 
 
     public static ArrayList<Integer> indexSetBits(Long bitboard){

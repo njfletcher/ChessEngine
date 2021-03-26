@@ -1,10 +1,14 @@
 package Chess;
 
+import java.util.ArrayList;
+
 public class Move {
 
     public int squareFrom;
     public int squareTo;
     long[] bitboardCopys;
+
+    ArrayList<Move> moves;
 
     public int pieceType;
 

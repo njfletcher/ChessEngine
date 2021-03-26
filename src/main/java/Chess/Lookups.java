@@ -38,20 +38,20 @@ public class Lookups {
 
     };
 
-    public static long[] diagonalTables = {
+    public static long[] evalTables = {
 
 
-            //a to h diagonal
-            0x8040201008040201L
+            //Middle of the board, used mostly for checking for centralized pawns.
+            0b0000000000000000011111100111111001111110011111100000000000000000L
+
 
     };
+
 
     //public static long borderClip = 0b000000001111110011111100111111001111110011111100111111000000000L;
 
 
-    public static long[] rookOccupancies;
-    public static long[] bishopOccupancies;
-    public static long[] queenOccupancies;
+
 
 
 

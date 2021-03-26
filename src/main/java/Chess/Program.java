@@ -27,10 +27,10 @@ public class Program {
 
         for(Move m: moves){
 
-            System.out.println(m.squareFrom);
-            System.out.println(m.squareTo);
-            System.out.println(m.pieceType);
+            System.out.println(ChessBoard.evaluatePos(m.bitboardCopys,0L));
         }
+
+
 
 
         //Instant ends = Instant.now();
