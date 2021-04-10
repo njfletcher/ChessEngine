@@ -8,7 +8,7 @@ import java.util.Arrays;
 public class ChessBoard {
 
 
-    public long squareToBitboard(String uciPosition) {
+    public static long squareToBitboard(String uciPosition) {
 
         //GOAL: take incoming board position and turn it into the required bitboards/update existing bitboards.
 
@@ -243,29 +243,29 @@ public class ChessBoard {
 
     public long calcDiagonal(int square, long allPieces){
         int r,f;
-        int tr = square /8;
-        int tf = square %8;
+        int tr = square /8 ;
+        int tf = square %8 ;
 
         long attacksB = 0L;
 
         //System.out.println("Square: " + i + " tr: " + tr + " tf: " + tf + " target Square: " + (((tr+1) * 8) + (tf+1)));
 
         //northeast ray
-        for(r = tr+1, f =tf+1; r<=7 && f<=6;r++, f++){
+        for(r = tr+1, f =tf+1; r<=7 && f<=7;r++, f++){
             attacksB |= 1L << (r*8 +f);
             if(((1L << (r*8 +f)) & allPieces) != 0){
                 break;
             }
         }
 
-        for(r = tr+1, f =tf-1; r<=7 && f>=1;r++, f--){
+        for(r = tr+1, f =tf-1; r<=7 && f>=0;r++, f--){
             attacksB |= 1L << (r*8 +f);
             if(((1L << (r*8 +f)) & allPieces) != 0){
                 break;
             }
         }
 
-        for(r = tr-1, f =tf+1; r>=0 && f<=6;r--, f++){
+        for(r = tr-1, f =tf+1; r>=0 && f<=7;r--, f++){
             attacksB |= 1L << (r*8 +f);
             if(((1L << (r*8 +f)) & allPieces) != 0){
                 break;
@@ -340,13 +340,13 @@ public class ChessBoard {
 
 
 
-    public long generateSideAttackMask(long sideToMove, long black, long white, long all){
+    public long generateSideAttackMask(long[] pieces, long sideToMove, long black, long white, long all){
 
-        if(sideToMove ==1L){
+        if(sideToMove ==1){
 
             long attackMap =0L;
 
-            ArrayList<Integer> indices = indexSetBits(GameState.bPawns);
+            ArrayList<Integer> indices = indexSetBits(pieces[0]);
 
 
             for(Integer num: indices){
@@ -358,7 +358,7 @@ public class ChessBoard {
 
 
 
-            indices = indexSetBits(GameState.bRooks);
+            indices = indexSetBits(pieces[1]);
             for(Integer num: indices){
                 long[] rookAttacks = calculateRookMoves(num,black,white,all);
                 attackMap |= rookAttacks[1];
@@ -367,37 +367,37 @@ public class ChessBoard {
             }
 
 
-            indices = indexSetBits(GameState.bKnights);
+            indices = indexSetBits(pieces[2]);
             for(Integer num: indices){
                 long[] knightAttacks = calculateKnightMoves(num,black,white,all);
                 attackMap |= knightAttacks[1];
-                ChessBoard.printBitBoard(attackMap);
+
 
             }
 
 
-            indices = indexSetBits(GameState.bKing);
+            indices = indexSetBits(pieces[3]);
             for(Integer num: indices){
                 long[] kingAttacks = calculateKingMoves(num,black,white,all);
                 attackMap |= kingAttacks[1];
-                ChessBoard.printBitBoard(attackMap);
+
 
             }
 
-            indices = indexSetBits(GameState.bQueens);
+            indices = indexSetBits(pieces[4]);
 
             for(Integer num: indices){
                 long[] queenAttacks = calculateQueenMoves(num,black,white,all);
                 attackMap |= queenAttacks[1];
-                ChessBoard.printBitBoard(attackMap);
+
 
             }
 
-            indices = indexSetBits(GameState.bBishops);
+            indices = indexSetBits(pieces[5]);
             for(Integer num: indices){
                 long[] bishopAttacks = calculateBishopMoves(num,black,white,all);
                 attackMap |= bishopAttacks[1];
-                ChessBoard.printBitBoard(attackMap);
+
 
             }
 
@@ -410,34 +410,34 @@ public class ChessBoard {
         else{
             long attackMap =0L;
 
-            ArrayList<Integer> indices = indexSetBits(GameState.wPawns);
+            ArrayList<Integer> indices = indexSetBits(pieces[6]);
 
             for(Integer num: indices){
                 long[] pawnAttacks = calculateWhitePawnMoves(num,white,black,all);
                 attackMap |= pawnAttacks[1];
             }
 
-            indices = indexSetBits(GameState.wRooks);
+            indices = indexSetBits(pieces[7]);
             for(Integer num: indices){
                 long[] rookAttacks = calculateRookMoves(num,white,black,all);
                 attackMap |= rookAttacks[1];
             }
 
 
-            indices = indexSetBits(GameState.wKnights);
+            indices = indexSetBits(pieces[8]);
             for(Integer num: indices){
                 long[] knightAttacks = calculateKnightMoves(num,white,black,all);
                 attackMap |= knightAttacks[1];
             }
 
 
-            indices = indexSetBits(GameState.wKing);
+            indices = indexSetBits(pieces[9]);
             for(Integer num: indices){
                 long[] kingAttacks = calculateKingMoves(num,white,black,all);
                 attackMap |= kingAttacks[1];
             }
 
-            indices = indexSetBits(GameState.wQueens);
+            indices = indexSetBits(pieces[10]);
 
             for(Integer num: indices){
                 long[] queenAttacks = calculateQueenMoves(num,white,black,all);
@@ -447,7 +447,7 @@ public class ChessBoard {
 
             }
 
-            indices = indexSetBits(GameState.wBishops);
+            indices = indexSetBits(pieces[11]);
             for(Integer num: indices){
                 long[] bishopAttacks = calculateBishopMoves(num,white,black,all);
 
@@ -461,7 +461,12 @@ public class ChessBoard {
 
     }
 
-    public static int evaluatePos(long[] bitboards, long sideToMove){
+    public static int evaluatePos(long[] bitboards){
+        //, long black, long white, long all
+
+        ChessBoard board = new ChessBoard();
+
+
 
         //pawns worth 1, knights/bishops worth 3, rook worth 5, queen worth 9, checkmate worth 10000
 
@@ -475,61 +480,74 @@ public class ChessBoard {
 
         //black pieces
         for(int i = 0; i<6;i++){
+
+
             int numP = indexSetBits(bitboards[i]).size();
 
 
+            if(i ==0)
+                evaluationBlack += numP;
 
-            switch(i){
-                case(0): evaluationBlack += numP;
-                break;
 
-                case(1): evaluationBlack += numP * 5;
-                break;
+            if(i ==1)
+                evaluationBlack += (numP * 5);
 
-                case(2): evaluationBlack += numP * 3;
-                break;
 
-                case(3): evaluationBlack += numP;
-                break;
+            if(i ==2)
+                evaluationBlack += (numP * 3);
 
-                case(4): evaluationBlack += numP * 9;
-                break;
 
-                case(5): evaluationBlack += numP * 3;
-                break;
-            }
+                //case(3): evaluationBlack += numP;
+                //break;
+
+            if(i ==4)
+                evaluationBlack += (numP * 9);
+
+
+            if(i ==5)
+                evaluationBlack += (numP * 3);
+
+
 
             //System.out.println(evaluationBlack);
         }
 
+
         //white pieces
         for(int j = 6; j<12;j++){
 
+
+
             int numP = indexSetBits(bitboards[j]).size();
 
-            switch(j){
-                case(6): evaluationWhite += numP;
-                break;
 
-                case(7): evaluationWhite += numP * 5;
-                break;
 
-                case(8): evaluationWhite += numP * 3;
-                break;
+            if(j ==6)
+                evaluationWhite += numP;
 
-                case(9): evaluationWhite += numP;
-                break;
 
-                case(10): evaluationWhite += numP * 9;
-                break;
+            if(j ==7)
+                evaluationWhite += numP * 5;
 
-                case(11): evaluationWhite += numP * 3;
-                break;
+
+            if(j ==8)
+                evaluationWhite += numP * 3;
+
+
+                //case(9): evaluationWhite += numP;
+                //break;
+
+            if(j ==10)
+                evaluationWhite += numP * 9;
+
+
+            if(j ==11)
+                evaluationWhite += numP * 3;
+
             }
 
 
 
-        }
 
 
 
@@ -545,12 +563,51 @@ public class ChessBoard {
         evaluationBlack += indexSetBits(bitboards[0] & Lookups.evalTables[0]).size();
 
 
+        //check for stacked pawns
+         for(Integer num: indexSetBits(bitboards[0])){
+
+             if((((1L<<num)>>8) & bitboards[0]) != 0){
+
+                 evaluationBlack-= 1;
+             }
+         }
+
+        for(Integer num: indexSetBits(bitboards[6])){
+
+            if((((1L<<num)<<8) & bitboards[6]) != 0){
+
+                evaluationWhite-= 1;
+            }
+        }
+
+
+        /*for(Integer num: indexSetBits(bitboards[2])){
+
+            if(((board.calculateKnightMoves(num,black,white,all)[1] & bitboards[9]) & (white &= ~(1L << indexSetBits(bitboards[9]).get(0))) & ~board.generateSideAttackMask(0L,black,white,all)) != 0){
+
+                    evaluationBlack +=2;
+            }
+            else if(((board.calculateKnightMoves(num,white,black,all)[1] & bitboards[3]) & (black &= ~(1L << indexSetBits(bitboards[3]).get(0))) & ~board.generateSideAttackMask(1L,black,white,all)) != 0){
+
+                    evaluationWhite+=2;
+            }
+        }
+
+         */
 
 
 
 
 
-        return evaluationBlack -evaluationWhite;
+
+
+
+
+
+
+
+
+        return evaluationWhite -evaluationBlack;
     }
 
 

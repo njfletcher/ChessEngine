@@ -47,6 +47,18 @@ public class Lookups {
 
     };
 
+    public static long[] castleTables = {
+
+
+            //squares of concern for white castling
+            0b0000000000000000000000000000000000000000000000000000000001101110L,
+
+            //squares of concern for black castling
+            0b0111011000000000000000000000000000000000000000000000000000000000L
+
+
+    };
+
 
     //public static long borderClip = 0b000000001111110011111100111111001111110011111100111111000000000L;
 

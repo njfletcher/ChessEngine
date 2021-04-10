@@ -2,6 +2,10 @@ package Chess;
 
 public class GameState {
 
+
+    //1 for white, -1 for black
+    public static int sideToMove = 1;
+
     public static long wPawns;
     public static long wRooks;
     public static long wKnights;
@@ -30,6 +34,19 @@ public class GameState {
 
     }
 
+
+
+    public static boolean currentPlayerIsWhite(){
+
+        if(sideToMove == 0b1L){
+            return true;
+        }
+
+        else{
+            return false;
+        }
+    }
+
     public static long[] generatePiecesArray(){
         long[] pieces = {
 
@@ -45,7 +62,7 @@ public class GameState {
 
     //1 for white, 0 for black
     //By defualt white moves first, unless the engine is fed a position which takes place during a game.
-    long sideToMove =1L;
+
 
 
     /*

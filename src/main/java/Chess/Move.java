@@ -18,11 +18,20 @@ public class Move {
     boolean enPassant;
     boolean check;
 
-    public Move(int s2, int sFro, long[] copies, int pType){
+    public Move(int sFro, int s2, long[] copies, int pType){
         squareFrom =sFro;
         squareTo = s2;
         bitboardCopys = copies;
         pieceType = pType;
+    }
+
+    public String toString(){
+
+        return "From: " + squareFrom + "(" + boardSqs.getboardSq(squareFrom) + ")" + "\n"
+                + " To : " + squareTo + "(" + boardSqs.getboardSq(squareTo) + ")" + "\n"
+                + "Piece: " + pieceType;
+
+
     }
 
 
