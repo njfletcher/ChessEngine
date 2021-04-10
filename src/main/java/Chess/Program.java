@@ -125,14 +125,7 @@ public class Program {
     public static ArrayList<Move> generateBlackMoves(long[] pieces,long castleRights) {
         ArrayList<Move> legalMoves = new ArrayList<Move>();
 
-
-
         ChessBoard board = new ChessBoard();
-
-
-        //look for errors in this part
-
-
 
         long bPieces= 0L;
         long wPieces = 0L;
@@ -206,20 +199,7 @@ public class Program {
                     pieces[i] &= ~(1L << num);
                     pieces[i]|= (1L << bit);
 
-
-
-                    long black = 0L;
-                    long white = 0L;
-                    long all;
-
-                    for(int h = 0; h<6;h++){
-                        black |= pieces[h];
-                    }
-                    for(int f= 6; f<12;f++){
-                        white |= pieces[f];
-                    }
-
-                    all = white | black;
+                    long[] teamCopies = generateTeamLongs(pieces);
 
                     long[] copy = new long[12];
 
@@ -230,7 +210,7 @@ public class Program {
 
 
                     //check for check after making hypothetical move
-                    if ((board.checkForCheck(pieces[3], board.generateSideAttackMask(pieces,-1, black, white, all))) ==false) {
+                    if ((board.checkForCheck(pieces[3], board.generateSideAttackMask(pieces,-1, teamCopies[0], teamCopies[1], teamCopies[2]))) ==false) {
                         legalMoves.add(new Move(num, bit, copy,i));
 
                     }
@@ -249,8 +229,6 @@ public class Program {
                     pieces[i] |= (1L << bit);
 
 
-
-
                     int index = 0;
                     for (int j = 6; j < 12; j++) {
                         if ((pieces[j] & (1L << bit)) != 0) {
@@ -260,16 +238,8 @@ public class Program {
                         }
                     }
 
-                    long black = 0L;
-                    long white = 0L;
-                    long all;
+                    long[] teamCopies = generateTeamLongs(pieces);
 
-                    for(int h = 0; h<6;h++){
-                        black |= pieces[h];
-                    }
-                    for(int f= 6; f<12;f++){
-                        white |= pieces[f];
-                    }
 
                     long[] copy = new long[12];
 
@@ -277,9 +247,9 @@ public class Program {
                         copy[l] = pieces[l];
                     }
 
-                    all = white | black;
-                    if ((board.checkForCheck(pieces[3], board.generateSideAttackMask(pieces,-1,black,white,all))) == false) {
-                        legalMoves.add(new Move(num, bit, copy,i));
+
+                    if ((board.checkForCheck(pieces[3], board.generateSideAttackMask(pieces,-1,teamCopies[0],teamCopies[1],teamCopies[2]))) == false) {
+                        legalMoves.add(new Move(num, bit, copy,i,index));
                     }
 
                     pieces[i] &= ~(1L << bit);
@@ -292,6 +262,71 @@ public class Program {
 
                 if(i==1){
                     //castle black checks.
+
+                    long[] teamCopies = generateTeamLongs(pieces);
+
+                    //attack map check should be per side, not one thing.
+                    if(!(((board.generateSideAttackMask(pieces,-1,teamCopies[0],teamCopies[1],teamCopies[2]) & Lookups.castleTables[1]) != 0) | ((teamCopies[2] & Lookups.castleTables[1])) != 0 )){
+                        //queenside black castle
+                        if((castleRights & 0b1L) != 0){
+
+                            pieces[3] &= ~(1L << 60);
+                            pieces[3]|= (1L <<58);
+
+                            pieces[1] &= ~(1L << 56);
+                            pieces[1]|= (1L <<59);
+
+
+                            long[] teamCopiesCastle = generateTeamLongs(pieces);
+
+                            long[] copy1 = new long[12];
+
+                            for(int l = 0; l < 12; l++){
+                                copy1[l] = pieces[l];
+                            }
+
+                            if ((board.checkForCheck(pieces[3], board.generateSideAttackMask(pieces,-1,teamCopiesCastle[0],teamCopiesCastle[1],teamCopiesCastle[2]))) == false) {
+                                legalMoves.add(new Move(copy1));
+                            }
+
+                            pieces[3] &= ~(1L <<58);
+                            pieces[3]|= (1L << 60);
+
+                            pieces[1] &= ~(1L << 59);
+                            pieces[1]|= (1L <<56);
+
+                        }
+                        //kingside black castle
+                        if((castleRights & 0b10L) != 0){
+
+                            pieces[3] &= ~(1L << 60);
+                            pieces[3]|= (1L <<62);
+
+                            pieces[1] &= ~(1L << 63);
+                            pieces[1]|= (1L <<61);
+
+
+                            long[] teamCopiesCastle = generateTeamLongs(pieces);
+
+                            long[] copy1 = new long[12];
+
+                            for(int l = 0; l < 12; l++){
+                                copy1[l] = pieces[l];
+                            }
+
+                            if ((board.checkForCheck(pieces[3], board.generateSideAttackMask(pieces,-1,teamCopiesCastle[0],teamCopiesCastle[1],teamCopiesCastle[2]))) == false) {
+                                legalMoves.add(new Move(copy1));
+                            }
+
+                            pieces[3] &= ~(1L <<62);
+                            pieces[3]|= (1L << 60);
+
+                            pieces[1] &= ~(1L << 61);
+                            pieces[1]|= (1L <<63);
+                        }
+
+                    }
+
                 }
             }
         }
@@ -368,20 +403,7 @@ public class Program {
                     pieces[i] &= ~(1L << num);
                     pieces[i]|= (1L << bit);
 
-
-
-                    long black = 0L;
-                    long white = 0L;
-                    long all;
-
-                    for(int h = 0; h<6;h++){
-                        black |= pieces[h];
-                    }
-                    for(int f= 6; f<12;f++){
-                        white |= pieces[f];
-                    }
-
-                    all = white | black;
+                    long[] teamCopies = generateTeamLongs(pieces);
 
                     long[] copy = new long[12];
 
@@ -394,7 +416,7 @@ public class Program {
 
 
                     //check for check after making hypothetical move
-                    if (!(board.checkForCheck(pieces[9], board.generateSideAttackMask(pieces,1,black,white,all)))) {
+                    if (!(board.checkForCheck(pieces[9], board.generateSideAttackMask(pieces,1,teamCopies[0],teamCopies[1],teamCopies[2])))) {
                         legalMoves.add(new Move(num, bit, copy,i));
                     }
 
@@ -421,18 +443,7 @@ public class Program {
                         }
                     }
 
-                    long black = 0L;
-                    long white = 0L;
-                    long all;
-
-                    for(int h = 0; h<6;h++){
-                        black |= pieces[h];
-                    }
-                    for(int f= 6; f<12;f++){
-                        white |= pieces[f];
-                    }
-
-                    all = white | black;
+                    long[] teamCopies = generateTeamLongs(pieces);
 
                     long[] copy = new long[12];
 
@@ -440,8 +451,8 @@ public class Program {
                         copy[l] = pieces[l];
                     }
 
-                    if (!(board.checkForCheck(pieces[9], board.generateSideAttackMask(pieces,1,black,white,all)))) {
-                        legalMoves.add(new Move(num, bit, copy,i));
+                    if (!(board.checkForCheck(pieces[9], board.generateSideAttackMask(pieces,1,teamCopies[0],teamCopies[1],teamCopies[2])))) {
+                        legalMoves.add(new Move(num, bit, copy,i,index));
                     }
                     pieces[i] &= ~(1L << bit);
                     pieces[i]|= (1L << num);
@@ -452,6 +463,71 @@ public class Program {
                 }
                 if(i==7){
                     //castle white checks.
+                    long[] teamCopies = generateTeamLongs(pieces);
+
+                    //attack map check should be per side, not one thing.
+                    if(!(((board.generateSideAttackMask(pieces,1,teamCopies[0],teamCopies[1],teamCopies[2]) & Lookups.castleTables[0]) != 0) | ((teamCopies[2] & Lookups.castleTables[0])) != 0 )){
+                        //queenside black castle
+                        if((castleRights & 0b100L) != 0){
+
+                            pieces[9] &= ~(1L << 4);
+                            pieces[9]|= (1L <<2);
+
+                            pieces[7] &= ~(1L);
+                            pieces[7]|= (1L <<3);
+
+
+                            long[] teamCopiesCastle = generateTeamLongs(pieces);
+
+                            long[] copy1 = new long[12];
+
+                            for(int l = 0; l < 12; l++){
+                                copy1[l] = pieces[l];
+                            }
+
+                            if ((board.checkForCheck(pieces[9], board.generateSideAttackMask(pieces,1,teamCopiesCastle[0],teamCopiesCastle[1],teamCopiesCastle[2]))) == false) {
+                                legalMoves.add(new Move(copy1));
+                            }
+
+                            pieces[9] &= ~(1L <<2);
+                            pieces[9]|= (1L << 4);
+
+                            pieces[7] &= ~(1L << 3);
+                            pieces[7]|= (1L);
+
+                        }
+                        //kingside black castle
+                        if((castleRights & 0b1000L) != 0){
+
+                            pieces[9] &= ~(1L << 4);
+                            pieces[9]|= (1L <<6);
+
+                            pieces[7] &= ~(1L << 7);
+                            pieces[7]|= (1L <<5);
+
+
+                            long[] teamCopiesCastle = generateTeamLongs(pieces);
+
+                            long[] copy1 = new long[12];
+
+                            for(int l = 0; l < 12; l++){
+                                copy1[l] = pieces[l];
+                            }
+
+                            if ((board.checkForCheck(pieces[9], board.generateSideAttackMask(pieces,1,teamCopiesCastle[0],teamCopiesCastle[1],teamCopiesCastle[2]))) == false) {
+                                legalMoves.add(new Move(copy1));
+                            }
+
+                            pieces[9] &= ~(1L <<6);
+                            pieces[9]|= (1L << 4);
+
+                            pieces[7] &= ~(1L << 5);
+                            pieces[7]|= (1L <<7);
+                        }
+
+                    }
+
+
                 }
             }
         }

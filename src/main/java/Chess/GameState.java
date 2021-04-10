@@ -72,7 +72,9 @@ public class GameState {
 
     1111 by defualt, unless loading in a midgame position.
     */
-    public static long castleRights = 1111;
+
+
+    public static long castleRights = 0b1111L;
 
 
     //holds square of possible en passant target squares.
