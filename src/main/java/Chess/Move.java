@@ -11,10 +11,10 @@ public class Move {
     long castleRightsCopy;
 
     public int capturedPieceType;
+    public int pieceType;
+    public int promotedPieceType;
 
     ArrayList<Move> moves;
-
-    public int pieceType;
 
     boolean capture;
     boolean castle;
@@ -24,7 +24,7 @@ public class Move {
 
 
     //normal move, no capture
-    public Move(int sFro, int s2, long[] copies, int pType){
+    public Move(int sFro, int s2, long[] copies, int pType,long castleCopy){
         squareFrom =sFro;
         squareTo = s2;
         bitboardCopys = copies;
@@ -32,7 +32,7 @@ public class Move {
     }
 
     //captures
-    public Move(int sFro, int s2, long[] copies, int pType, int capturedPiece){
+    public Move(int sFro, int s2, long[] copies, int pType, int capturedPiece,long castleCopy){
         squareFrom =sFro;
         squareTo = s2;
         bitboardCopys = copies;
@@ -42,11 +42,40 @@ public class Move {
     }
 
     //castles
-    public Move(long[] copies){
+    public Move(long[] copies,long castleCopy){
 
         bitboardCopys = copies;
         castle = true;
         pieceType =1;
+
+    }
+
+    //promoted move only
+    public Move(int from, int to,int promoteTo, long[] copies, long castleCopy){
+
+        squareFrom= from;
+        squareTo= to;
+
+        bitboardCopys = copies;
+        promotion = true;
+        pieceType =0;
+        promotedPieceType = promoteTo;
+
+    }
+
+    //promoted + capture moves
+    public Move(int from, int to,int promoteTo,int capturedPiece, long[] copies, long castleCopy){
+
+        squareFrom= from;
+        squareTo= to;
+
+        capturedPieceType = capturedPiece;
+
+        bitboardCopys = copies;
+        promotion = true;
+        capture= true;
+        pieceType =0;
+        promotedPieceType = promoteTo;
 
     }
 

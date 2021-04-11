@@ -50,11 +50,20 @@ public class Lookups {
     public static long[] castleTables = {
 
 
-            //squares of concern for white castling
-            0b0000000000000000000000000000000000000000000000000000000001101110L,
+            //squares of concern for white castling, left side
+            0b0000000000000000000000000000000000000000000000000000000000001110L,
 
-            //squares of concern for black castling
-            0b0111011000000000000000000000000000000000000000000000000000000000L
+            //squares of concern for white castling, right side
+            0b0000000000000000000000000000000000000000000000000000000001100000L,
+
+
+
+
+            //squares of concern for black castling, right side
+            0b0110000000000000000000000000000000000000000000000000000000000000L,
+
+            //squares of concern for black castling, left side
+            0b0000111000000000000000000000000000000000000000000000000000000000L
 
 
     };
