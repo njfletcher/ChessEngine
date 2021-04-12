@@ -83,7 +83,8 @@ public class Move {
 
         return "From: " + squareFrom + "(" + boardSqs.getboardSq(squareFrom) + ")" + "\n"
                 + " To : " + squareTo + "(" + boardSqs.getboardSq(squareTo) + ")" + "\n"
-                + "Piece: " + pieceType;
+                + "Piece: " + pieceType + "\n" + "Capture/Castle/Promotion/enPassant/Check" + "\n" +
+                (capture ? 1:0) + (castle ? 1:0) + (promotion ? 1:0) + (enPassant ? 1:0) + (check ? 1:0);
 
 
     }
