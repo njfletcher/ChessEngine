@@ -461,10 +461,12 @@ public class ChessBoard {
 
     }
 
-    public static int evaluatePos(long[] bitboards){
+    public static int evaluatePos(long[] bitboards,long castleRights, int enPass){
         //, long black, long white, long all
 
         ChessBoard board = new ChessBoard();
+
+        long[] teamLongs = Program.generateTeamLongs(bitboards);
 
 
 
@@ -594,6 +596,14 @@ public class ChessBoard {
         }
 
          */
+
+        if(Program.generateBlackMoves(bitboards,castleRights,enPass).size()==0 & (board.checkForCheck(bitboards[3],board.generateSideAttackMask(bitboards,-1,teamLongs[0],teamLongs[1],teamLongs[2]))== true )){
+            evaluationWhite =1000;
+        }
+
+        if(Program.generateWhiteMoves(bitboards,castleRights,enPass).size()==0 & (board.checkForCheck(bitboards[9],board.generateSideAttackMask(bitboards,1,teamLongs[0],teamLongs[1],teamLongs[2]))== true )){
+            evaluationBlack =1000;
+        }
 
 
 
