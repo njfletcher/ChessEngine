@@ -39,7 +39,7 @@ public class ChessBoard {
 
         //8 possible moves for a king from a given position, unless on a border, under check, or attempting to move into a piece that is
         // under the watch of another piece.
-         long kingBitBoard =1L<< square;
+         long kingBitBoard = 0b1L<< square;
          long kingAFile = kingBitBoard & Lookups.fileTables[0];
          long kingHFile = kingBitBoard & Lookups.fileTables[Lookups.fileTables.length-2];
 
@@ -48,14 +48,16 @@ public class ChessBoard {
          long move3 = kingHFile <<9;
          long move4 = kingHFile <<1;
 
-         long move5 = kingHFile >> 7;
-         long move6 = kingBitBoard >>8;
-         long move7  = kingAFile >>9;
-         long move8 = kingAFile >>1;
+         long move5 = kingHFile >>> 7;
+
+
+         long move6 = kingBitBoard >>>8;
+         long move7  = kingAFile >>>9;
+         long move8 = kingAFile >>>1;
 
          long kingPsuedos = move1 | move2| move3| move4| move5| move6| move7| move8;
 
-         long kingMoves = kingPsuedos & ~allPieces;
+        long kingMoves = kingPsuedos & ~allPieces;
          long kingAttacks = kingPsuedos & enemySide;
 
         return new long[]{kingMoves,kingAttacks};
@@ -102,10 +104,10 @@ public class ChessBoard {
         long spot3 = spot3Clip <<17;
         long spot4 = spot4Clip <<10;
 
-        long spot5 = spot5Clip >> 6;
-        long spot6 = spot6Clip >> 15;
-        long spot7 = spot7Clip >>17;
-        long spot8 = spot8Clip >>10;
+        long spot5 = spot5Clip >>> 6;
+        long spot6 = spot6Clip >>> 15;
+        long spot7 = spot7Clip >>>17;
+        long spot8 = spot8Clip >>>10;
 
 
         long knightPsuedos = spot1 | spot2 | spot3 | spot4 | spot5 | spot6| spot7 | spot8;
@@ -155,17 +157,17 @@ public class ChessBoard {
 
         long pawnLocation = 1L <<square;
 
-        long oneStep = pawnLocation >> 8 & ~allPieces;
+        long oneStep = pawnLocation >>> 8 & ~allPieces;
 
         //checking for if said pawn is on 7th rank.
-        long twoSteps = ((oneStep & (Lookups.rankTables[0]<<40))>>8) & ~allPieces;
+        long twoSteps = ((oneStep & (Lookups.rankTables[0]<<40))>>>8) & ~allPieces;
 
         long legalMoves = oneStep | twoSteps;
 
         //checking for if pawn is on left border
-        long pawnEastAttack = (pawnLocation & Lookups.fileTables[0])>>9;
+        long pawnEastAttack = (pawnLocation & Lookups.fileTables[0])>>>9;
         //checking for if pawn if on right border
-        long pawnWestAttack = (pawnLocation & Lookups.fileTables[Lookups.fileTables.length-2])>>7;
+        long pawnWestAttack = (pawnLocation & Lookups.fileTables[Lookups.fileTables.length-2])>>>7;
 
         long pawnAttacks = pawnEastAttack | pawnWestAttack;
         long pawnLegalAttacks = pawnAttacks & WhitePieces;
@@ -206,38 +208,13 @@ public class ChessBoard {
         long moves = crosses | diagonals;
 
 
-        return new long[]{moves & ~allPieces,(moves & ~ownSideBitBoard) & oppositeSidePieces };
+
+
+        return new long[]{moves & ~allPieces,(moves & oppositeSidePieces )};
 
     }
 
-    public long[] calculateWKCastle(int kSquare, long kingOccupancy, long singleRookOccupancy){
 
-        kingOccupancy <<= 2;
-        singleRookOccupancy >>= 2;
-
-        return new long[]{kingOccupancy,singleRookOccupancy};
-    }
-    public long[] calculateWQCastle(int kSquare, long kingOccupancy, long singleRookOccupancy){
-        kingOccupancy >>= 2;
-        singleRookOccupancy <<=3;
-
-        return new long[]{kingOccupancy,singleRookOccupancy};
-
-    }
-    public long[] calculateBKCastle(int kSquare, long kingOccupancy, long singleRookOccupancy){
-        kingOccupancy <<= 2;
-        singleRookOccupancy >>=2;
-
-        return new long[]{kingOccupancy,singleRookOccupancy};
-
-    }
-    public long[] calculateBQCastle(int kSquare, long kingOccupancy, long singleRookOccupancy){
-        kingOccupancy >>= 2;
-        singleRookOccupancy <<=3;
-
-        return new long[]{kingOccupancy,singleRookOccupancy};
-
-    }
 
 
 
@@ -272,7 +249,7 @@ public class ChessBoard {
             }
         }
 
-        for(r = tr-1, f =tf-1; r>=0 && f>=1;r--, f--) {
+        for(r = tr-1, f =tf-1; r>=0 && f>=0;r--, f--) {
             attacksB |= 1L << (r * 8 + f);
             if (((1L << (r * 8 + f)) & allPieces) != 0) {
                 break;
@@ -583,19 +560,6 @@ public class ChessBoard {
         }
 
 
-        /*for(Integer num: indexSetBits(bitboards[2])){
-
-            if(((board.calculateKnightMoves(num,black,white,all)[1] & bitboards[9]) & (white &= ~(1L << indexSetBits(bitboards[9]).get(0))) & ~board.generateSideAttackMask(0L,black,white,all)) != 0){
-
-                    evaluationBlack +=2;
-            }
-            else if(((board.calculateKnightMoves(num,white,black,all)[1] & bitboards[3]) & (black &= ~(1L << indexSetBits(bitboards[3]).get(0))) & ~board.generateSideAttackMask(1L,black,white,all)) != 0){
-
-                    evaluationWhite+=2;
-            }
-        }
-
-         */
 
         if(Program.generateBlackMoves(bitboards,castleRights,enPass).size()==0 & (board.checkForCheck(bitboards[3],board.generateSideAttackMask(bitboards,-1,teamLongs[0],teamLongs[1],teamLongs[2]))== true )){
             evaluationWhite =1000;
@@ -604,6 +568,10 @@ public class ChessBoard {
         if(Program.generateWhiteMoves(bitboards,castleRights,enPass).size()==0 & (board.checkForCheck(bitboards[9],board.generateSideAttackMask(bitboards,1,teamLongs[0],teamLongs[1],teamLongs[2]))== true )){
             evaluationBlack =1000;
         }
+
+
+
+
 
 
 
@@ -639,6 +607,35 @@ public class ChessBoard {
 
 
         return indices;
+    }
+
+    public static boolean checkForCheckmate(long[] pieces, long castles,int enPass, int side){
+
+        long[] teamLongs = Program.generateTeamLongs(pieces);
+        ChessBoard board = new ChessBoard();
+
+        if(Program.generateBlackMoves(pieces,castles,enPass).size()==0 & (board.checkForCheck(pieces[3],board.generateSideAttackMask(pieces,-1,teamLongs[0],teamLongs[1],teamLongs[2]))== true )){
+            return true;
+        }
+        if(Program.generateWhiteMoves(pieces,castles,enPass).size()==0 & (board.checkForCheck(pieces[9],board.generateSideAttackMask(pieces,1,teamLongs[0],teamLongs[1],teamLongs[2]))== true )){
+            return true;
+        }
+
+        else return false;
+    }
+    public static boolean checkForStalemate(long[] pieces, long castles,int enPass, int side){
+
+        long[] teamLongs = Program.generateTeamLongs(pieces);
+        ChessBoard board = new ChessBoard();
+
+        if(Program.generateBlackMoves(pieces,castles,enPass).size()==0 & (board.checkForCheck(pieces[3],board.generateSideAttackMask(pieces,-1,teamLongs[0],teamLongs[1],teamLongs[2]))== false )){
+            return true;
+        }
+        if(Program.generateWhiteMoves(pieces,castles,enPass).size()==0 & (board.checkForCheck(pieces[9],board.generateSideAttackMask(pieces,1,teamLongs[0],teamLongs[1],teamLongs[2]))== false )){
+            return true;
+        }
+
+        else return false;
     }
 
 

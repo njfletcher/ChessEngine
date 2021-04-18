@@ -8,9 +8,7 @@ import java.util.Arrays;
 public class Program {
 
 
-    //check generating and being used from before causing problems?????
-    //white makes move, black then makes moves off of those moves. It seems black is still obeying white's original attack mask when making the next move.
-    //examine ordering of generating check.
+
 
     public static void main(String[] args) throws InterruptedException {
 
@@ -37,21 +35,13 @@ public class Program {
         //long attack = board.calculateQueenMoves(boardSqs.getBitofSquare())
 
 
-        ArrayList<Move> ms = generateBlackMoves(pieces,0000L,passCopy);
-
-        for(Move move : ms){
-            System.out.println("----------------------------");
-            System.out.println(move);
-            System.out.println(ChessBoard.evaluatePos(move.bitboardCopys,move.castleRightsCopy,move.enPassSquare));
-
-            System.out.println("----------------------------");
-        }
 
 
 
 
 
-        MovePair m = miniMax(pieces,castleCopy,passCopy,4,-1 * sideCopy,false);
+
+        MovePair m = miniMax(pieces,castleCopy,passCopy,4,sideCopy,true);
 
         System.out.println(m.first());
         System.out.println(m.second());
@@ -122,6 +112,8 @@ public class Program {
 
 
     }
+
+
 
 
 
