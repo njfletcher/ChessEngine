@@ -438,7 +438,7 @@ public class ChessBoard {
 
     }
 
-    public static int evaluatePos(long[] bitboards,long castleRights, int enPass){
+    public static int evaluatePos(long[] bitboards,long castleRights, int enPass, int depth){
         //, long black, long white, long all
 
         ChessBoard board = new ChessBoard();
@@ -461,7 +461,11 @@ public class ChessBoard {
         for(int i = 0; i<6;i++){
 
 
+
+
             int numP = indexSetBits(bitboards[i]).size();
+
+            //System.out.println("i: " + i + " " + numP);
 
 
             if(i ==0)
@@ -497,7 +501,11 @@ public class ChessBoard {
 
 
 
+
+
             int numP = indexSetBits(bitboards[j]).size();
+
+            //System.out.println("i: " + j + " " + numP);
 
 
 
@@ -562,11 +570,25 @@ public class ChessBoard {
 
 
         if(Program.generateBlackMoves(bitboards,castleRights,enPass).size()==0 & (board.checkForCheck(bitboards[3],board.generateSideAttackMask(bitboards,-1,teamLongs[0],teamLongs[1],teamLongs[2]))== true )){
-            evaluationWhite =1000;
+
+            if(depth>0){
+                evaluationWhite =1000 * depth;
+
+            }
+            else {
+                evaluationWhite = 1000;
+            }
+
         }
 
         if(Program.generateWhiteMoves(bitboards,castleRights,enPass).size()==0 & (board.checkForCheck(bitboards[9],board.generateSideAttackMask(bitboards,1,teamLongs[0],teamLongs[1],teamLongs[2]))== true )){
-            evaluationBlack =1000;
+            if(depth>0){
+                evaluationBlack =1000 * depth;
+
+            }
+            else {
+                evaluationBlack = 1000;
+            }
         }
 
 

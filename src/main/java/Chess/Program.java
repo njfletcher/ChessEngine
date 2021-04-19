@@ -18,7 +18,7 @@ public class Program {
         ChessBoard board = new ChessBoard();
         FenParser parser = new FenParser();
 
-        parser.fenToBitboards("K7/8/8/8/4Pp2/8/8/k7 w - - 0 1");
+        parser.fenToBitboards("K7/8/8/8/2Q5/8/7R/k7 b - - 0 1");
 
 
         //1B6/8/1K6/2Qr2k1/8/8/8/8 b - - 0 1
@@ -27,29 +27,39 @@ public class Program {
 
         int sideCopy = GameState.sideToMove;
 
-        int passCopy = boardSqs.getBitofSquare("e3");
-        long castleCopy = GameState.castleRights;
+        int passCopy = 64;
+        long castleCopy = 0000L;
 
         long[] pieces = GameState.generatePiecesArray();
 
-        //long attack = board.calculateQueenMoves(boardSqs.getBitofSquare())
+
+        /*ArrayList<Move> moves = generateWhiteMoves(pieces,castleCopy,passCopy);
+
+        for(Move m : moves){
+            System.out.println(ChessBoard.evaluatePos(m.bitboardCopys,m.castleRightsCopy,m.enPassSquare));
+        }
+
+        System.out.println("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
+        System.out.println("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
+        System.out.println("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
+
+
+        ArrayList<Move> moves1 = sortMoves(moves);
+
+        for(Move m : moves1){
+            System.out.println(ChessBoard.evaluatePos(m.bitboardCopys,m.castleRightsCopy,m.enPassSquare));
+        }
+
+         */
 
 
 
 
 
-
-
-
-        MovePair m = miniMax(pieces,castleCopy,passCopy,4,sideCopy,true);
+        MovePair m = miniMax(pieces,castleCopy,passCopy,4,sideCopy,true,Integer.MIN_VALUE,Integer.MAX_VALUE);
 
         System.out.println(m.first());
         System.out.println(m.second());
-
-        //black is minimizing player, white is maximizing
-
-
-
 
 
         Instant ends = Instant.now();
@@ -60,50 +70,44 @@ public class Program {
 
     }
 
-    public static MovePair miniMax(long[] pieces,long castleRights,int enPassSquare, int depth, int side, boolean isMaxPlayer) {
+    public static MovePair miniMax(long[] pieces,long castleRights,int enPassSquare, int depth, int side, boolean isMaxPlayer, int alpha, int beta) {
 
-        if (depth == 0) {
-            return new MovePair(null,ChessBoard.evaluatePos(pieces,castleRights,enPassSquare));
+        if (depth == 0 | (ChessBoard.checkForCheckmate(pieces,castleRights,enPassSquare,side)== true)| (ChessBoard.checkForStalemate(pieces,castleRights,enPassSquare,side)== true)) {
+            //| (ChessBoard.checkForCheckmate(pieces,castleRights,enPassSquare,side)== true)| (ChessBoard.checkForStalemate(pieces,castleRights,enPassSquare,side)== true)
+            return new MovePair(null,ChessBoard.evaluatePos(pieces,castleRights,enPassSquare,depth));
         }
 
-        Move bestMove = null;
+        Move bestMove= null;
         ArrayList<Move> possibleMoves = getCurrentPlayerMoves(pieces, side,castleRights,enPassSquare);
 
-        int bestVal = 0;
-        if (isMaxPlayer) {
-            bestVal = Integer.MIN_VALUE;
+        int bestVal = isMaxPlayer ? Integer.MIN_VALUE : Integer.MAX_VALUE;
 
-            for (Move m : possibleMoves) {
+        for(Move m: possibleMoves){
 
-                MovePair pair = miniMax(m.bitboardCopys, m.castleRightsCopy,m.enPassSquare,depth - 1, -1 * side, !isMaxPlayer);
-                int currVal = pair.second();
+            int currValue = miniMax(m.bitboardCopys,m.castleRightsCopy,m.enPassSquare,depth-1,-1* side,!isMaxPlayer,alpha,beta).second();
 
-                if(currVal>bestVal){
-                    bestVal = currVal;
-                    bestMove =m;
+            if(isMaxPlayer){
+
+                if(currValue>bestVal){
+                    bestVal = currValue;
+                    bestMove = m;
                 }
-
+                alpha = Math.max(alpha, currValue);
             }
-        }
-
-
-        if (!isMaxPlayer) {
-                bestVal = Integer.MAX_VALUE;
-
-            for (Move m : possibleMoves) {
-
-                MovePair pair = miniMax(m.bitboardCopys, m.castleRightsCopy,m.enPassSquare,depth - 1, -1 * side, !isMaxPlayer);
-                int currVal = pair.second();
-
-                if(currVal<bestVal){
-                    bestVal = currVal;
-                    bestMove =m;
+            else{
+                if(currValue<bestVal){
+                    bestVal = currValue;
+                    bestMove = m;
                 }
+                beta = Math.min(beta, currValue);
+            }
 
+            if(beta <= alpha) {
+
+                break;
             }
 
         }
-
 
 
 
@@ -113,7 +117,18 @@ public class Program {
 
     }
 
+    public static ArrayList<Move> sortMoves(ArrayList<Move> moves){
 
+
+        ArrayList<Move> newMoves = new ArrayList<Move>();
+
+        int max = Integer.MIN_VALUE;
+        Move maxM = null;
+
+
+            return newMoves;
+
+    }
 
 
 
