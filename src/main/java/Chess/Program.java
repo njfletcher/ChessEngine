@@ -1,78 +1,281 @@
 package Chess;
 
-import java.time.Duration;
-import java.time.Instant;
-import java.util.ArrayList;
-import java.util.Arrays;
+
+
+import java.io.*;
+import java.util.*;
+
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
+
+
 
 public class Program {
 
-
-
-
-    public static void main(String[] args) throws InterruptedException {
-
-        Instant starts = Instant.now();
+    public static void main(String[] args) throws Exception {
 
 
         ChessBoard board = new ChessBoard();
         FenParser parser = new FenParser();
 
-        parser.fenToBitboards("K7/8/8/8/2Q5/8/7R/k7 b - - 0 1");
+
+        InputStream is =  Lichess.sendRequest("GET","/api/stream/event");
+
+        final BufferedReader reader = new BufferedReader(
+                new InputStreamReader(is));
+        String line = null;
+        while ((line = reader.readLine()) != null) {
 
 
-        //1B6/8/1K6/2Qr2k1/8/8/8/8 b - - 0 1
+            if(line.length() != 0) {
 
-        //K7/1q6/8/1q3k2/8/8/8/8 w - - 0 1
+                System.out.println(line);
 
-        int sideCopy = GameState.sideToMove;
+                Gson gson = new Gson();
 
-        int passCopy = 64;
-        long castleCopy = 0000L;
+                JsonObject coderollsJsonObject = gson.fromJson(line, JsonObject.class);
 
-        long[] pieces = GameState.generatePiecesArray();
+               //get type of event
+                String s = coderollsJsonObject.get("type").toString();
 
 
-        /*ArrayList<Move> moves = generateWhiteMoves(pieces,castleCopy,passCopy);
 
-        for(Move m : moves){
-            System.out.println(ChessBoard.evaluatePos(m.bitboardCopys,m.castleRightsCopy,m.enPassSquare));
+
+
+                if(s.equals("\"challenge\"")){
+
+
+                    //get challenge(game) id
+                    String id = coderollsJsonObject.get("challenge").getAsJsonObject().get("id").getAsString();
+
+                    //get name of opponent
+                    String challengerID = coderollsJsonObject.get("challenge").getAsJsonObject().get("challenger").getAsJsonObject().get("id").toString();
+
+                    //accept
+                    Lichess.sendPOSTRequest("/api/challenge/" + id + "/accept","",null);
+
+                    //start game
+                    playGame(challengerID,id);
+
+                }
+
+
+
+
+
+            }
+
         }
-
-        System.out.println("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
-        System.out.println("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
-        System.out.println("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
-
-
-        ArrayList<Move> moves1 = sortMoves(moves);
-
-        for(Move m : moves1){
-            System.out.println(ChessBoard.evaluatePos(m.bitboardCopys,m.castleRightsCopy,m.enPassSquare));
-        }
-
-         */
+        reader.close();
 
 
 
 
 
-        MovePair m = miniMax(pieces,castleCopy,passCopy,4,sideCopy,true,Integer.MIN_VALUE,Integer.MAX_VALUE);
-
-        System.out.println(m.first());
-        System.out.println(m.second());
 
 
-        Instant ends = Instant.now();
 
-        System.out.println("TIME TAKEN FOR DEPTH OF 4: " + Duration.between(starts, ends).toMillis() / 1000);
+
+
+
+
 
 
 
     }
 
+    public static void playGame(String oppID, String challengeID) throws IOException {
+
+        FenParser parser = new FenParser();
+        Gson gson = new Gson();
+
+        InputStream is = Lichess.sendRequest("GET", "/api/bot/game/stream/" + challengeID);
+
+
+        final BufferedReader reader = new BufferedReader(
+                new InputStreamReader(is));
+        String line = reader.readLine();
+
+        System.out.println(line);
+
+        JsonObject coderollsJsonObject = gson.fromJson(line, JsonObject.class);
+
+        String whiteId = coderollsJsonObject.get("white").getAsJsonObject().get("id").toString();
+
+        String fen = coderollsJsonObject.get("initialFen").toString().replaceAll("\"","");
+
+
+        if(fen.equals("startpos")){
+            parser.fenToBitboards("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
+        }
+        else{
+            parser.fenToBitboards(fen);
+        }
+
+        //checks what color the bot is playing for this game
+        GameState.botSide = whiteId.equals("\"goosefish\"") ? 1 : -1;
+
+
+        int count =0;
+        String line1 = null;
+
+        boolean firstMove = true;
+
+        //even describes what moves the bot should translate.
+        //if bot is first move, it should translate every second(aka even)move
+        boolean even = false;
+        if(GameState.botSide == GameState.sideToMove){
+            even = true;
+
+        }
+
+        System.out.println(even + " ");
+
+        while ((line1 = reader.readLine())!= null) {
+
+            if(line1.length() != 0) {
+
+                JsonObject json = gson.fromJson(line1, JsonObject.class);
+
+                if (json.get("type").toString().equals("\"gameState\"")) {
+
+                    JsonObject jsonRead = gson.fromJson(line1, JsonObject.class);
+
+                    String gameLine = jsonRead.get("moves").toString().replaceAll("\"", "");
+
+                    String[] moveArr = gameLine.split(" ");
+
+                    if ((moveArr.length % 2 == 0) == even) {
+
+
+
+
+                        System.out.print("Your Turn");
+
+
+                        //making sure that the incoming events are moves not chats.
+
+
+                        System.out.println(line1);
+
+                        String[] moves = json.get("moves").toString().split(" ");
+
+                        System.out.println(moves[moves.length - 1].replaceAll("\"", ""));
+
+                        long[] movePieces1 = GameState.generatePiecesArray();
+
+                        for(int i =0; i<12;i++){
+                            System.out.println(i);
+
+                            ChessBoard.printBitBoard(movePieces1[i]);
+                        }
+
+
+                        Lichess.recieveIncoming(moves[moves.length - 1].replaceAll("\"", ""));
+
+                        long[] movePieces2 = GameState.generatePiecesArray();
+
+                        for(int i =0; i<12;i++){
+                            System.out.println(i);
+
+                            ChessBoard.printBitBoard(movePieces2[i]);
+                        }
+
+
+                        GameState.sideToMove *= -1;
+
+                    }
+
+                }
+            }
+            if(GameState.botSide== GameState.sideToMove){
+
+
+                System.out.print("My Turn");
+                long[] movePieces = GameState.generatePiecesArray();
+
+
+                for(int i =0; i<12;i++){
+                    System.out.println(i);
+
+                    ChessBoard.printBitBoard(movePieces[i]);
+                }
+
+
+                long castle = GameState.castleRights;
+                int enPassant = GameState.enPassant;
+
+                int sideTurn = GameState.sideToMove;
+
+
+
+                boolean isMaximizer = (GameState.botSide == 1) ? true : false;
+
+
+
+
+
+                Move move = miniMax(movePieces, castle, enPassant, 4, sideTurn, isMaximizer, Integer.MIN_VALUE, Integer.MAX_VALUE).first();
+
+
+
+                System.out.println(move);
+
+                GameState.statePieces = move.bitboardCopys;
+
+                GameState.castleRights = move.castleRightsCopy;
+
+                GameState.enPassant = move.enPassSquare;
+
+                GameState.updateIndivBoards();
+
+                String finalMove = Lichess.translateMove(move);
+
+                System.out.println(finalMove);
+
+                Map<String, String> dic = new HashMap<String, String>();
+
+                dic.put("offeringDraw", "false");
+
+                Lichess.sendPOSTRequest("/api/bot/game/" + challengeID + "/move/" + finalMove + "", "", dic);
+
+                GameState.sideToMove *= -1;
+
+
+                long[] movePieces1 = GameState.generatePiecesArray();
+
+                for(int i =0; i<12;i++){
+                    System.out.println(i);
+
+                    ChessBoard.printBitBoard(movePieces1[i]);
+                }
+
+            }
+
+
+
+
+        }
+
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     public static MovePair miniMax(long[] pieces,long castleRights,int enPassSquare, int depth, int side, boolean isMaxPlayer, int alpha, int beta) {
 
-        if (depth == 0 | (ChessBoard.checkForCheckmate(pieces,castleRights,enPassSquare,side)== true)| (ChessBoard.checkForStalemate(pieces,castleRights,enPassSquare,side)== true)) {
+        if (depth == 0 || (ChessBoard.checkForCheckmate(pieces,castleRights,enPassSquare,side)== true)|| (ChessBoard.checkForStalemate(pieces,castleRights,enPassSquare,side)== true)) {
             //| (ChessBoard.checkForCheckmate(pieces,castleRights,enPassSquare,side)== true)| (ChessBoard.checkForStalemate(pieces,castleRights,enPassSquare,side)== true)
             return new MovePair(null,ChessBoard.evaluatePos(pieces,castleRights,enPassSquare,depth));
         }
@@ -80,11 +283,24 @@ public class Program {
         Move bestMove= null;
         ArrayList<Move> possibleMoves = getCurrentPlayerMoves(pieces, side,castleRights,enPassSquare);
 
+        sortMoves(possibleMoves,depth);
+
         int bestVal = isMaxPlayer ? Integer.MIN_VALUE : Integer.MAX_VALUE;
 
         for(Move m: possibleMoves){
 
-            int currValue = miniMax(m.bitboardCopys,m.castleRightsCopy,m.enPassSquare,depth-1,-1* side,!isMaxPlayer,alpha,beta).second();
+            long[] copy = new long[12];
+
+
+
+
+            for(int l = 0; l < 12; l++){
+                copy[l] = m.bitboardCopys[l];
+            }
+
+
+
+            int currValue = miniMax(copy,m.castleRightsCopy,m.enPassSquare,depth-1,-1* side,!isMaxPlayer,alpha,beta).second();
 
             if(isMaxPlayer){
 
@@ -115,26 +331,25 @@ public class Program {
         return new MovePair(bestMove,bestVal);
 
 
-    }
+   }
 
-    public static ArrayList<Move> sortMoves(ArrayList<Move> moves){
-
-
-        ArrayList<Move> newMoves = new ArrayList<Move>();
-
-        int max = Integer.MIN_VALUE;
-        Move maxM = null;
+   public static void  sortMoves(ArrayList<Move> moves, int depth){
 
 
-            return newMoves;
+       /* for(Move m : moves){
 
-    }
+            m.evalScore = ChessBoard.evaluatePos(m.bitboardCopys,m.castleRightsCopy,m.enPassSquare,depth);
+        }
 
+        */
+
+        moves.sort(new MoveSorter());
 
 
 
+   }
 
-    public static ArrayList<Move> getCurrentPlayerMoves(long[] pieces,long sideMove,long castleRights,int enPassSquare){
+   public static ArrayList<Move> getCurrentPlayerMoves(long[] pieces,long sideMove,long castleRights,int enPassSquare){
 
         if(sideMove == 1){
             return generateWhiteMoves(pieces,castleRights,enPassSquare);

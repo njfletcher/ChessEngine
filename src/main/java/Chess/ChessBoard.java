@@ -568,7 +568,7 @@ public class ChessBoard {
         }
 
 
-
+        //checkmates
         if(Program.generateBlackMoves(bitboards,castleRights,enPass).size()==0 & (board.checkForCheck(bitboards[3],board.generateSideAttackMask(bitboards,-1,teamLongs[0],teamLongs[1],teamLongs[2]))== true )){
 
             if(depth>0){
@@ -590,6 +590,24 @@ public class ChessBoard {
                 evaluationBlack = 1000;
             }
         }
+
+
+
+        //stalemates
+        if(Program.generateBlackMoves(bitboards,castleRights,enPass).size()==0 & (board.checkForCheck(bitboards[3],board.generateSideAttackMask(bitboards,-1,teamLongs[0],teamLongs[1],teamLongs[2]))== false )){
+
+            evaluationWhite = -500;
+
+        }
+        if(Program.generateWhiteMoves(bitboards,castleRights,enPass).size()==0 & (board.checkForCheck(bitboards[9],board.generateSideAttackMask(bitboards,1,teamLongs[0],teamLongs[1],teamLongs[2]))== false )){
+
+                evaluationBlack = -500;
+
+        }
+
+
+
+
 
 
 

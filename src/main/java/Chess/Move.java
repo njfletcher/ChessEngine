@@ -2,10 +2,12 @@ package Chess;
 
 import java.util.ArrayList;
 
-public class Move {
+public class Move{
 
     public int squareFrom;
     public int squareTo;
+
+    public int evalScore;
 
 
     //0-63 for actual squares, 64 if enpassant is not possible.

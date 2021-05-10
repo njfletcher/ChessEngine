@@ -4,7 +4,11 @@ public class GameState {
 
 
     //1 for white, -1 for black
-    public static int sideToMove = 1;
+    public static int sideToMove =1;
+
+    public static long[] statePieces;
+
+    public static int botSide;
 
     public static long wPawns;
     public static long wRooks;
@@ -34,6 +38,23 @@ public class GameState {
 
     }
 
+    public static void updateIndivBoards(){
+
+        bPawns = statePieces[0];
+        bRooks = statePieces[1];
+        bKnights = statePieces[2];
+        bKing = statePieces[3];
+        bQueens = statePieces[4];
+        bBishops = statePieces[5];
+        wPawns = statePieces[6];
+        wRooks = statePieces[7];
+        wKnights = statePieces[8];
+        wKing = statePieces[9];
+        wQueens = statePieces[10];
+        wBishops = statePieces[11];
+
+    }
+
 
 
     public static boolean currentPlayerIsWhite(){
@@ -59,6 +80,18 @@ public class GameState {
 
     }
 
+    public static void updatePiecesArray(){
+        statePieces  = new long[]{
+
+                bPawns, bRooks, bKnights, bKing, bQueens, bBishops,
+                wPawns, wRooks, wKnights, wKing, wQueens, wBishops
+
+        };
+
+
+
+    }
+
 
     //1 for white, 0 for black
     //By defualt white moves first, unless the engine is fed a position which takes place during a game.
@@ -74,12 +107,12 @@ public class GameState {
     */
 
 
-    public static long castleRights = 0b1111L;
+    public static long castleRights = 0b0000L;
 
 
     //holds square of possible en passant target squares.
-    public static long whiteEnPassant;
-    public static long blackEnPassant;
+    public static int enPassant = 64;
+
 
 
 

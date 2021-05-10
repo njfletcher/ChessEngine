@@ -69,13 +69,38 @@ public class Lookups {
     };
 
 
-    //public static long borderClip = 0b000000001111110011111100111111001111110011111100111111000000000L;
+
+
+
+        public static int getIndexPromotion(char p){
+            if(p == 'q'){
+                return 4;
+            }
+            if(p == 'r'){
+                return 1;
+            }
+            if(p == 'b'){
+                return 5;
+            }
+            if(p == 'n'){
+                return 2;
+            }
+            if(p == 'Q'){
+                return 10;
+            }
+            if(p == 'R'){
+                return 7;
+            }
+            if(p == 'B'){
+                return 11;
+            }
+            if(p == 'N') {
+                return 8;
+            }
+            else return -1;
+        }
+    }
 
 
 
 
-
-
-
-
-}

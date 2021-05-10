@@ -23,6 +23,7 @@ public class FenParser {
 
         int counter = 63;
 
+        //handles the piece positions
 
         for (String rank : positionsbyRank) {
 
@@ -97,7 +98,34 @@ public class FenParser {
                 }
                 counter--;
             }
+
+
         }
+        //handles the rest of the fen.
+
+        //side to move
+        GameState.sideToMove = parsed[1].equals("w") ? 1 : -1;
+
+
+        //castle rights
+        if(parsed[2].contains("K")){
+            GameState.castleRights |= 1L << 3;
+        }
+        if(parsed[2].contains("Q")){
+            GameState.castleRights |= 1L << 2;
+        }
+        if(parsed[2].contains("k")){
+            GameState.castleRights |= 1L << 1;
+        }
+        if(parsed[2].contains("q")){
+            GameState.castleRights |= 1L;
+        }
+
+
+
+        //enPassant square
+
+        GameState.enPassant = parsed[3].equals("-") ? 64 : Integer.parseInt(parsed[3]);
     }
 
 
