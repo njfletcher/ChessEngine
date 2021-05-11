@@ -1,6 +1,6 @@
 package Chess;
 
-import sun.jvm.hotspot.debugger.ProcessInfo;
+//import sun.jvm.hotspot.debugger.ProcessInfo;
 
 import javax.net.ssl.HttpsURLConnection;
 import java.io.IOException;
@@ -15,10 +15,11 @@ import java.util.Map;
 public class Lichess {
 
     final static String baseUrl = "https://lichess.org";
-    private static final String token = System.getenv("API_TOKEN");
+    private static final String token = System.getenv("API_TOKEN").replace("\"","");
 
     public static InputStream sendRequest(String method, String endpoint) throws IOException
     {
+        System.out.println(token);
         HttpsURLConnection con = (HttpsURLConnection) new URL(baseUrl + endpoint).openConnection();
         con.setRequestMethod(method);
         if(token != null)
