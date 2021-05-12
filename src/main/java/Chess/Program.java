@@ -8,7 +8,7 @@ import java.util.*;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 
-
+//make copy of copy for inserting bitboards in move objects.
 
 public class Program {
 
@@ -67,20 +67,6 @@ public class Program {
 
         }
         reader.close();
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
     }
 
@@ -164,26 +150,26 @@ public class Program {
 
                         long[] movePieces1 = GameState.generatePiecesArray();
 
-                       /* for(int i =0; i<12;i++){
+                        for(int i =0; i<12;i++){
                             System.out.println(i);
 
                             ChessBoard.printBitBoard(movePieces1[i]);
                         }
 
-                        */
+
 
 
                         Lichess.recieveIncoming(moves[moves.length - 1].replaceAll("\"", ""));
 
                         long[] movePieces2 = GameState.generatePiecesArray();
 
-                        /*for(int i =0; i<12;i++){
+                        for(int i =0; i<12;i++){
                             System.out.println(i);
 
                             ChessBoard.printBitBoard(movePieces2[i]);
                         }
 
-                         */
+
 
 
                         GameState.sideToMove *= -1;
@@ -220,9 +206,14 @@ public class Program {
 
 
 
-                Move move = miniMax(GameState.statePieces, castle, enPassant, 4, sideTurn, isMaximizer, Integer.MIN_VALUE, Integer.MAX_VALUE).first();
+                Move move = miniMax(GameState.statePieces, castle, enPassant, 1, sideTurn, isMaximizer, Integer.MIN_VALUE, Integer.MAX_VALUE).first();
 
 
+                for(int i =0; i<12;i++){
+                    System.out.println(i);
+
+                    ChessBoard.printBitBoard(move.bitboardCopys[i]);
+                }
 
                 System.out.println(move);
 
@@ -240,19 +231,17 @@ public class Program {
 
                 long[] movePieces1 = GameState.generatePiecesArray();
 
-                /*for(int i =0; i<12;i++){
-                    System.out.println(i);
 
-                    ChessBoard.printBitBoard(movePieces1[i]);
-                }
 
-                 */
+
 
                 Map<String, String> dic = new HashMap<String, String>();
 
                 dic.put("offeringDraw", "false");
 
                 Lichess.sendPOSTRequest("/api/bot/game/" + challengeID + "/move/" + finalMove + "", "", dic);
+
+
 
                 GameState.sideToMove *= -1;
 
@@ -291,22 +280,6 @@ public class Program {
 
         Move bestMove= null;
         ArrayList<Move> possibleMoves = getCurrentPlayerMoves(pieces, side,castleRights,enPassSquare);
-
-        if(depth ==4){
-
-            /*for(Move moves: possibleMoves){
-                System.out.println(moves);
-            }
-
-             */
-            for(int i =0; i<12;i++){
-                System.out.println(i);
-
-                ChessBoard.printBitBoard(pieces[i]);
-            }
-
-        }
-
 
         sortMoves(possibleMoves,depth);
 
@@ -547,7 +520,7 @@ public class Program {
 
                     //check for check after making hypothetical move
                     if ((board.checkForCheck(copy[3], board.generateSideAttackMask(copy,-1, teamCopies[0], teamCopies[1], teamCopies[2]))) ==false) {
-                        legalMoves.add(new Move(num, bit, copy,i,castleRightsCopy,enPassTarget));
+                        legalMoves.add(new Move(num, bit, copyArray(copy),i,castleRightsCopy,enPassTarget));
 
                     }
 
@@ -645,7 +618,7 @@ public class Program {
 
 
                     if ((board.checkForCheck(copy[3], board.generateSideAttackMask(copy,-1,teamCopies[0],teamCopies[1],teamCopies[2]))) == false) {
-                        legalMoves.add(new Move(num, bit, copy,i,index,castleRightsCopy,enPassTarget));
+                        legalMoves.add(new Move(num, bit, copyArray(copy),i,index,castleRightsCopy,enPassTarget));
                     }
 
                     copy[i] &= ~(1L << bit);
@@ -694,7 +667,7 @@ public class Program {
 
 
                             if ((board.checkForCheck(copy[3], board.generateSideAttackMask(copy, -1, teamCopiesCastle[0], teamCopiesCastle[1], teamCopiesCastle[2]))) == false) {
-                                legalMoves.add(new Move(copy, castleRightsCopy,enPassTarget));
+                                legalMoves.add(new Move(copyArray(copy), castleRightsCopy,enPassTarget));
                             }
 
                             copy[3] &= ~(1L << 58);
@@ -726,7 +699,7 @@ public class Program {
 
 
                             if ((board.checkForCheck(copy[3], board.generateSideAttackMask(copy,-1,teamCopiesCastle[0],teamCopiesCastle[1],teamCopiesCastle[2]))) == false) {
-                                legalMoves.add(new Move(copy,castleRightsCopy,enPassTarget));
+                                legalMoves.add(new Move(copyArray(copy),castleRightsCopy,enPassTarget));
                             }
 
                             copy[3] &= ~(1L <<62);
@@ -763,7 +736,7 @@ public class Program {
                             enPassTarget = 64;
 
                             if ((board.checkForCheck(copy[3], board.generateSideAttackMask(copy,-1,teamCopiesPass[0],teamCopiesPass[1],teamCopiesPass[2]))) == false) {
-                                legalMoves.add(new Move(possEnPass,enPassSquare,6,copy,0,castleRights,enPassTarget));
+                                legalMoves.add(new Move(possEnPass,enPassSquare,6,copyArray(copy),0,castleRights,enPassTarget));
                             }
 
                             copy[0] |= (1L << possEnPass);
@@ -805,14 +778,18 @@ public class Program {
 
         for (int i = 6; i < 12; i++) {
 
+
+
             ArrayList<Integer> indices = ChessBoard.indexSetBits(pieces[i]);
 
             long[] moves = new long[2];
+
 
             for (Integer num : indices) {
 
                 if(i ==6) {
                     moves = board.calculateWhitePawnMoves(num, wPieces, bPieces, allPieces);
+
                 }
 
                 if(i ==7) {
@@ -844,8 +821,13 @@ public class Program {
                 ArrayList<Integer> attackIndices = ChessBoard.indexSetBits(moves[1]);
 
 
+
+
+
                 //loop through each standard move target square.
                 for (Integer bit : moveIndices) {
+
+
 
                     long[] copy = new long[12];
 
@@ -856,6 +838,9 @@ public class Program {
                     //make move
                     copy[i] &= ~(1L << num);
                     copy[i]|= (1L << bit);
+
+
+
 
                     long[] teamCopies = generateTeamLongs(copy);
                     int enPassTarget = enPassSquare;
@@ -928,12 +913,13 @@ public class Program {
 
                     //check for check after making hypothetical move
                     if (!(board.checkForCheck(copy[9], board.generateSideAttackMask(copy,1,teamCopies[0],teamCopies[1],teamCopies[2])))) {
-                        legalMoves.add(new Move(num, bit, copy,i,castleRightsCopy,enPassTarget));
+                        legalMoves.add(new Move(num, bit, copyArray(copy),i,castleRightsCopy,enPassTarget));
                     }
 
                     //undo move
                     copy[i] &= ~(1L << bit);
                     copy[i] |= (1L << num);
+
 
                 }
 
@@ -1016,7 +1002,7 @@ public class Program {
 
 
                     if (!(board.checkForCheck(copy[9], board.generateSideAttackMask(copy,1,teamCopies[0],teamCopies[1],teamCopies[2])))) {
-                        legalMoves.add(new Move(num, bit, copy,i,index,castleRightsCopy,enPassTarget));
+                        legalMoves.add(new Move(num, bit, copyArray(copy),i,index,castleRightsCopy,enPassTarget));
                     }
                     copy[i] &= ~(1L << bit);
                     copy[i]|= (1L << num);
@@ -1063,7 +1049,7 @@ public class Program {
 
 
                             if ((board.checkForCheck(copy[9], board.generateSideAttackMask(copy, 1, teamCopiesCastle[0], teamCopiesCastle[1], teamCopiesCastle[2]))) == false) {
-                                legalMoves.add(new Move(copy, castleRightsCopy,enPassTarget));
+                                legalMoves.add(new Move(copyArray(copy), castleRightsCopy,enPassTarget));
                             }
 
                             copy[9] &= ~(1L << 2);
@@ -1095,7 +1081,7 @@ public class Program {
 
 
                             if ((board.checkForCheck(copy[9], board.generateSideAttackMask(copy, 1, teamCopiesCastle[0], teamCopiesCastle[1], teamCopiesCastle[2]))) == false) {
-                                legalMoves.add(new Move(copy, castleRightsCopy,enPassTarget));
+                                legalMoves.add(new Move(copyArray(copy), castleRightsCopy,enPassTarget));
                             }
 
                             copy[9] &= ~(1L << 6);
@@ -1137,7 +1123,7 @@ public class Program {
                             enPassTarget = 64;
 
                             if ((board.checkForCheck(copy[9], board.generateSideAttackMask(copy,-1,teamCopiesPass[0],teamCopiesPass[1],teamCopiesPass[2]))) == false) {
-                                legalMoves.add(new Move(possEnPass,enPassSquare,0,copy,6,castleRights,enPassTarget));
+                                legalMoves.add(new Move(possEnPass,enPassSquare,0,copyArray(copy),6,castleRights,enPassTarget));
                             }
 
                             copy[6] |= (1L << possEnPass);
@@ -1152,10 +1138,22 @@ public class Program {
                 }
             }
         }
+
         return legalMoves;
     }
 
 
+    public static long[] copyArray(long[] array){
+
+
+        long[] copy = new long[12];
+        for(int l = 0; l < 12; l++){
+            copy[l] = array[l];
+        }
+
+        return copy;
+
+    }
 
     public static long[] generateTeamLongs(long[] pieces){
         long black = 0L;

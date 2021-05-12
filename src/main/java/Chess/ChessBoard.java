@@ -454,85 +454,21 @@ public class ChessBoard {
         int evaluationBlack = 0;
 
 
+        int blackMoveSize= Program.generateBlackMoves(bitboards,castleRights,enPass).size();
+        int whiteMoveSize= Program.generateWhiteMoves(bitboards,castleRights,enPass).size();
 
-        //simple counter based only on assigned value for each piece.
-
-        //black pieces
-        for(int i = 0; i<6;i++){
-
-
+        long blackAttack = board.generateSideAttackMask(bitboards,1,teamLongs[0],teamLongs[1],teamLongs[2]);
+        long whiteAttack = board.generateSideAttackMask(bitboards,-1,teamLongs[0],teamLongs[1],teamLongs[2]);
 
 
-            int numP = indexSetBits(bitboards[i]).size();
-
-            //System.out.println("i: " + i + " " + numP);
-
-
-            if(i ==0)
-                evaluationBlack += numP;
+        int simpleMatScore = (9 * (indexSetBits(bitboards[10]).size()- indexSetBits(bitboards[4]).size())) +
+                (5 * (indexSetBits(bitboards[7]).size()- indexSetBits(bitboards[1]).size())) +
+                (3 * (indexSetBits(bitboards[8]).size()- indexSetBits(bitboards[2]).size())) +
+                (3 * (indexSetBits(bitboards[11]).size()- indexSetBits(bitboards[5]).size())) +
+                (1 * (indexSetBits(bitboards[6]).size()- indexSetBits(bitboards[0]).size()));
 
 
-            if(i ==1)
-                evaluationBlack += (numP * 5);
-
-
-            if(i ==2)
-                evaluationBlack += (numP * 3);
-
-
-                //case(3): evaluationBlack += numP;
-                //break;
-
-            if(i ==4)
-                evaluationBlack += (numP * 9);
-
-
-            if(i ==5)
-                evaluationBlack += (numP * 3);
-
-
-
-            //System.out.println(evaluationBlack);
-        }
-
-
-        //white pieces
-        for(int j = 6; j<12;j++){
-
-
-
-
-
-            int numP = indexSetBits(bitboards[j]).size();
-
-            //System.out.println("i: " + j + " " + numP);
-
-
-
-            if(j ==6)
-                evaluationWhite += numP;
-
-
-            if(j ==7)
-                evaluationWhite += numP * 5;
-
-
-            if(j ==8)
-                evaluationWhite += numP * 3;
-
-
-                //case(9): evaluationWhite += numP;
-                //break;
-
-            if(j ==10)
-                evaluationWhite += numP * 9;
-
-
-            if(j ==11)
-                evaluationWhite += numP * 3;
-
-            }
-
+        int mobilityScore = whiteMoveSize - blackMoveSize;
 
 
 
@@ -569,7 +505,7 @@ public class ChessBoard {
 
 
         //checkmates
-        if(Program.generateBlackMoves(bitboards,castleRights,enPass).size()==0 & (board.checkForCheck(bitboards[3],board.generateSideAttackMask(bitboards,-1,teamLongs[0],teamLongs[1],teamLongs[2]))== true )){
+        if(blackMoveSize==0 & (board.checkForCheck(bitboards[3],whiteAttack)== true )){
 
             if(depth>0){
                 evaluationWhite =1000 * depth;
@@ -581,7 +517,7 @@ public class ChessBoard {
 
         }
 
-        if(Program.generateWhiteMoves(bitboards,castleRights,enPass).size()==0 & (board.checkForCheck(bitboards[9],board.generateSideAttackMask(bitboards,1,teamLongs[0],teamLongs[1],teamLongs[2]))== true )){
+        if(whiteMoveSize==0 & (board.checkForCheck(bitboards[9],blackAttack)== true )){
             if(depth>0){
                 evaluationBlack =1000 * depth;
 
@@ -594,38 +530,22 @@ public class ChessBoard {
 
 
         //stalemates
-        if(Program.generateBlackMoves(bitboards,castleRights,enPass).size()==0 & (board.checkForCheck(bitboards[3],board.generateSideAttackMask(bitboards,-1,teamLongs[0],teamLongs[1],teamLongs[2]))== false )){
+        if(blackMoveSize==0 & (board.checkForCheck(bitboards[3],whiteAttack)== false )){
 
             evaluationWhite = -500;
 
         }
-        if(Program.generateWhiteMoves(bitboards,castleRights,enPass).size()==0 & (board.checkForCheck(bitboards[9],board.generateSideAttackMask(bitboards,1,teamLongs[0],teamLongs[1],teamLongs[2]))== false )){
+        if(whiteMoveSize==0 & (board.checkForCheck(bitboards[9],blackAttack)== false )){
 
                 evaluationBlack = -500;
 
         }
 
+        return evaluationWhite -evaluationBlack + simpleMatScore + mobilityScore;
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        return evaluationWhite -evaluationBlack;
+        //return (int)(Math.random() * 10)+1;
     }
 
 
