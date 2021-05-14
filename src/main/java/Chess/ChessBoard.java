@@ -41,7 +41,7 @@ public class ChessBoard {
         // under the watch of another piece.
          long kingBitBoard = 0b1L<< square;
          long kingAFile = kingBitBoard & Lookups.fileTables[0];
-         long kingHFile = kingBitBoard & Lookups.fileTables[Lookups.fileTables.length-2];
+         long kingHFile = kingBitBoard & Lookups.fileTables[3];
 
          long move1 = kingAFile <<7;
          long move2 = kingBitBoard <<8;
@@ -90,14 +90,16 @@ public class ChessBoard {
         //checking to see if knight is on a file
         long spot2Clip = Lookups.fileTables[0] & knightLocation;
         //checking to see if knight is on h file
-        long spot3Clip = Lookups.fileTables[Lookups.fileTables.length-2] & knightLocation;
+        long spot3Clip = Lookups.fileTables[3] & knightLocation;
         //checking to see if knight is on g or h file
-        long spot4Clip = Lookups.fileTables[3] & Lookups.fileTables[Lookups.fileTables.length-2] & knightLocation;
+        long spot4Clip = Lookups.fileTables[3] & Lookups.fileTables[2] & knightLocation;
+
 
         long spot5Clip = spot4Clip;
         long spot6Clip = spot3Clip;
         long spot7Clip = spot2Clip;
         long spot8Clip = spot1Clip;
+
 
         long spot1 = spot1Clip <<6;
         long spot2 = spot2Clip <<15;
@@ -110,11 +112,12 @@ public class ChessBoard {
         long spot8 = spot8Clip >>>10;
 
 
+
+
         long knightPsuedos = spot1 | spot2 | spot3 | spot4 | spot5 | spot6| spot7 | spot8;
         long knightLegals = knightPsuedos & ~allPieces;
         long knightAttacks = knightPsuedos & enemySide;
-        String s = Long.toString(knightLegals);
-        String s1 = Long.toString(knightAttacks);
+
 
 
 
@@ -135,11 +138,11 @@ public class ChessBoard {
 
         long legalMoves = oneStep | twoSteps;
 
-        //checking for if pawn is on right border
+        //checking for if pawn is on left border
         long pawnEastAttack = (pawnLocation & Lookups.fileTables[0])<<7;
 
-        //checking for if pawn is on left border
-        long pawnWestAttack = (pawnLocation & Lookups.fileTables[Lookups.fileTables.length-2])<<9;
+        //checking for if pawn is on right border
+        long pawnWestAttack = (pawnLocation & Lookups.fileTables[3])<<9;
 
         long pawnAttacks = pawnEastAttack | pawnWestAttack;
         long pawnLegalAttacks = pawnAttacks & blackPieces;
@@ -167,7 +170,7 @@ public class ChessBoard {
         //checking for if pawn is on left border
         long pawnEastAttack = (pawnLocation & Lookups.fileTables[0])>>>9;
         //checking for if pawn if on right border
-        long pawnWestAttack = (pawnLocation & Lookups.fileTables[Lookups.fileTables.length-2])>>>7;
+        long pawnWestAttack = (pawnLocation & Lookups.fileTables[3])>>>7;
 
         long pawnAttacks = pawnEastAttack | pawnWestAttack;
         long pawnLegalAttacks = pawnAttacks & WhitePieces;
@@ -198,6 +201,137 @@ public class ChessBoard {
 
 
     }
+
+    public long[] calculateBishopMovesPt2(int square, long ownSide, long oppositeSide, long allPieces){
+
+        allPieces &= Lookups.bishopMasks[square];
+
+        allPieces *= Lookups.bishopMagics[square];
+
+        allPieces >>>= 64 - Lookups.bishopIndexBits[square];
+
+        long moves = Lookups.bishopMagicAttacks[square][(int)allPieces];
+
+        return new long[]{moves & ~allPieces,moves  & oppositeSide};
+
+
+    }
+
+    public long[] calculateRookMovesPt2(int square, long ownSide, long oppoSide, long allPieces){
+
+        allPieces &= Lookups.rookMasks[square];
+
+        allPieces *= Lookups.rookMagics[square];
+
+        allPieces >>>= 64 - Lookups.rookIndexBits[square];
+
+        long moves= Lookups.rookMagicAttacks[square][(int)allPieces];
+
+
+        return new long[]{moves & ~allPieces,moves & oppoSide};
+    }
+
+    public long[] calculateQueenMovesPt2(int square, long ownSide, long oppoSide, long allPieces){
+
+        long[] diags = calculateBishopMovesPt2(square,ownSide, oppoSide,allPieces);
+
+        long[] cross = calculateRookMovesPt2(square,ownSide, oppoSide,allPieces);
+
+
+        return new long[]{diags[0] | cross[0],diags[1] | cross[1]};
+
+
+    }
+
+    public void initMagicAttackTables(boolean isBishop){
+
+
+        for(int square = 0; square < 64; square++){
+
+            long bMask = Lookups.bishopMasks[square];
+            long rMask = Lookups.rookMasks[square];
+
+
+            long usedMask = isBishop ? bMask : rMask;
+
+            int bitNum = indexSetBits(usedMask).size();
+
+            int occVariations = 1<< bitNum;
+
+            for(int block = 0; block < occVariations; block++){
+
+                if(isBishop){
+
+                    long occupancy = getBlockers(block,bitNum,usedMask);
+
+                    int magicKey= (int) (occupancy * Lookups.bishopMagics[square] >>> 64 - Lookups.bishopIndexBits[square]);
+
+                    Lookups.bishopMagicAttacks[square][magicKey] = calcDiagonal(square, occupancy);
+
+                }
+                else{
+
+                    long occupancy = getBlockers(block,bitNum,usedMask);
+
+                    int magicKey= (int) (occupancy * Lookups.rookMagics[square] >>> 64 - Lookups.rookIndexBits[square]);
+
+                    Lookups.rookMagicAttacks[square][magicKey] = calcCross(square, occupancy);
+
+                }
+            }
+
+
+        }
+
+    }
+
+    long getBlockers(int index, int bitNum, long mask)
+    {
+        // occupancy map
+        long occupancy = 0L;
+
+        // loop over the range of bits within attack mask
+        for (int count = 0; count < bitNum; count++)
+        {
+            // get LS1B index of attacks mask
+            int square = getLSB(mask);
+
+            // pop LS1B in attack map
+            mask &= mask -1;
+
+            // make sure occupancy is on board
+            if ((index & (1 << count))!=0)
+                // populate occupancy map
+                occupancy |= (1L << square);
+        }
+
+        // return occupancy map
+        return occupancy;
+    }
+
+
+
+    public static int getLSB(long bitboard){
+
+
+        String bits = padZeros(bitboard);
+        int count =0;
+
+        for(int i = bits.length()-1; i>=0;i--){
+            if(bits.charAt(i) == '1'){
+                break;
+            }
+            count++;
+        }
+
+
+        return count;
+
+
+
+    }
+
+
 
     public long[] calculateQueenMoves(int square, long ownSideBitBoard, long oppositeSidePieces, long allPieces ){
 
@@ -545,7 +679,98 @@ public class ChessBoard {
 
 
 
+
+
         //return (int)(Math.random() * 10)+1;
+    }
+
+    public static long[] initBishopMasks() {
+
+
+        long[] masks = new long[64];
+
+        for (int i = 0; i < 64; i++) {
+
+            int r, f;
+            int tr = i / 8;
+            int tf = i % 8;
+
+            long attacksB = 0L;
+
+            //System.out.println("Square: " + i + " tr: " + tr + " tf: " + tf + " target Square: " + (((tr+1) * 8) + (tf+1)));
+
+            //northeast ray
+            for (r = tr + 1, f = tf + 1; r <= 6 && f <= 6; r++, f++) {
+                attacksB |= 1L << (r * 8 + f);
+            }
+
+            for (r = tr + 1, f = tf - 1; r <= 6 && f >= 1; r++, f--) {
+                attacksB |= 1L << (r * 8 + f);
+
+            }
+
+            for (r = tr - 1, f = tf + 1; r >= 1 && f <= 6; r--, f++) {
+                attacksB |= 1L << (r * 8 + f);
+
+            }
+
+            for (r = tr - 1, f = tf - 1; r >= 1 && f >= 1; r--, f--) {
+                attacksB |= 1L << (r * 8 + f);
+
+            }
+
+            masks[i] = attacksB;
+
+        }
+        return masks;
+
+    }
+
+
+
+    public static long[] initRookMasks(){
+
+        long[] masks = new long[64];
+
+        for (int i = 0; i < 64; i++) {
+
+
+            int r,f;
+            int tr = i /8;
+            int tf = i %8;
+
+            long attacksR = 0L;
+
+            //System.out.println("Square: " + i + " tr: " + tr + " tf: " + tf + " target Square: " + (((tr+1) * 8) + (tf+1)));
+
+            //northeast ray
+            for(r = tr+1; r<=6 ;r++){
+                attacksR |= 1L << (r*8 +tf);
+
+            }
+
+            for(r = tr-1; r>=1;r--){
+                attacksR |= 1L << (r*8 +tf);
+
+            }
+
+            for(f = tf+1; f<=6;f++){
+                attacksR |= 1L << (tr*8 +f);
+
+            }
+            for(f = tf-1; f>=1;f--){
+                attacksR |= 1L << (tr*8 +f);
+
+            }
+
+            masks[i] = attacksR;
+        }
+        return masks;
+
+
+
+
+
     }
 
 

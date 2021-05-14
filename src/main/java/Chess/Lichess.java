@@ -126,7 +126,7 @@ public class Lichess {
 
             int moveFrom = boardSqs.getBitofSquare(move.substring(0, 2));
 
-            int moveTo = boardSqs.getBitofSquare(move.substring(2, 4));
+            int moveTo = boardSqs.getBitofSquare(move.substring(2,4));
 
             char promoteTo = move.charAt(move.length() - 1);
 

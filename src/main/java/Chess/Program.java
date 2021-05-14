@@ -18,8 +18,28 @@ public class Program {
         ChessBoard board = new ChessBoard();
         FenParser parser = new FenParser();
 
+        board.initMagicAttackTables(true);
+        board.initMagicAttackTables(false);
 
-        InputStream is =  Lichess.sendRequest("GET","/api/stream/event");
+
+        //ChessBoard.printBitBoard(board.calculateBishopMovesPt2(40,1L<<33));
+
+        long ownside = 1<<63;
+        long oppo = 1<< 56;
+        ChessBoard.printBitBoard(board.calculateBishopMovesPt2(63,ownside,oppo,ownside | oppo)[0]);
+
+        ChessBoard.printBitBoard(board.calculateBishopMovesPt2(63,ownside,oppo,ownside | oppo)[1]);
+
+
+
+
+
+
+
+
+        //board.calculateBishopMovesPt2(18,1l<<27);
+
+        /*InputStream is =  Lichess.sendRequest("GET","/api/stream/event");
 
         final BufferedReader reader = new BufferedReader(
                 new InputStreamReader(is));
@@ -67,6 +87,10 @@ public class Program {
 
         }
         reader.close();
+
+
+         */
+
 
     }
 
@@ -150,24 +174,31 @@ public class Program {
 
                         long[] movePieces1 = GameState.generatePiecesArray();
 
-                        for(int i =0; i<12;i++){
+                        /*for(int i =0; i<12;i++){
                             System.out.println(i);
 
                             ChessBoard.printBitBoard(movePieces1[i]);
                         }
+
+                         */
 
 
 
 
                         Lichess.recieveIncoming(moves[moves.length - 1].replaceAll("\"", ""));
 
+
+                        GameState.updateIndivBoards();
+
                         long[] movePieces2 = GameState.generatePiecesArray();
 
-                        for(int i =0; i<12;i++){
+                        /*for(int i =0; i<12;i++){
                             System.out.println(i);
 
                             ChessBoard.printBitBoard(movePieces2[i]);
                         }
+
+                         */
 
 
 
@@ -184,11 +215,13 @@ public class Program {
                 System.out.print("My Turn");
                 GameState.updatePiecesArray();
 
-                for(int i =0; i<12;i++){
+               /* for(int i =0; i<12;i++){
                     System.out.println(i);
 
                     ChessBoard.printBitBoard(GameState.statePieces[i]);
                 }
+
+                */
 
 
 
@@ -206,14 +239,16 @@ public class Program {
 
 
 
-                Move move = miniMax(GameState.statePieces, castle, enPassant, 1, sideTurn, isMaximizer, Integer.MIN_VALUE, Integer.MAX_VALUE).first();
+                Move move = miniMax(GameState.statePieces, castle, enPassant, 4, sideTurn, isMaximizer, Integer.MIN_VALUE, Integer.MAX_VALUE).first();
 
 
-                for(int i =0; i<12;i++){
+                /*for(int i =0; i<12;i++){
                     System.out.println(i);
 
                     ChessBoard.printBitBoard(move.bitboardCopys[i]);
                 }
+
+                 */
 
                 System.out.println(move);
 
@@ -228,11 +263,6 @@ public class Program {
                 String finalMove = Lichess.translateMove(move);
 
                 System.out.println(finalMove);
-
-                long[] movePieces1 = GameState.generatePiecesArray();
-
-
-
 
 
                 Map<String, String> dic = new HashMap<String, String>();
