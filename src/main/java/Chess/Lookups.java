@@ -412,6 +412,12 @@ public class Lookups {
 
         static long[][] rookMagicAttacks = new long[64][4096];
 
+        static long[] kingLookups = new long[64];
+
+        static long[] knightLookups = new long[64];
+
+
+
 
 
 

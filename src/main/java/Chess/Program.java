@@ -15,17 +15,26 @@ public class Program {
     public static void main(String[] args) throws Exception {
 
 
+
         ChessBoard board = new ChessBoard();
         FenParser parser = new FenParser();
 
         board.initMagicAttackTables(true);
         board.initMagicAttackTables(false);
+        board.initKingTables();
+        board.initKnightLookups();
+
+
+
+
+
+
 
 
         //ChessBoard.printBitBoard(board.calculateBishopMovesPt2(40,1L<<33));
 
-        long ownside = 1<<63;
-        long oppo = 1<< 56;
+        //long ownside = 1<<63;
+        //long oppo = 1<< 56;
         //ChessBoard.printBitBoard(board.calculateQueenMovesPt2(56,0L,1L<<62,1L<<49)[0]);
 
 
@@ -41,7 +50,7 @@ public class Program {
 
         //board.calculateBishopMovesPt2(18,1l<<27);
 
-        /*InputStream is =  Lichess.sendRequest("GET","/api/stream/event");
+        InputStream is =  Lichess.sendRequest("GET","/api/stream/event");
 
         final BufferedReader reader = new BufferedReader(
                 new InputStreamReader(is));
@@ -91,7 +100,7 @@ public class Program {
         reader.close();
 
 
-         */
+
 
 
     }
@@ -313,7 +322,7 @@ public class Program {
         Move bestMove= null;
         ArrayList<Move> possibleMoves = getCurrentPlayerMoves(pieces, side,castleRights,enPassSquare);
 
-        sortMoves(possibleMoves,depth);
+        //sortMoves(possibleMoves,depth);
 
         int bestVal = isMaxPlayer ? Integer.MIN_VALUE : Integer.MAX_VALUE;
 

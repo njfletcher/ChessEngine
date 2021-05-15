@@ -39,23 +39,7 @@ public class ChessBoard {
 
         //8 possible moves for a king from a given position, unless on a border, under check, or attempting to move into a piece that is
         // under the watch of another piece.
-         long kingBitBoard = 0b1L<< square;
-         long kingAFile = kingBitBoard & Lookups.fileTables[0];
-         long kingHFile = kingBitBoard & Lookups.fileTables[3];
-
-         long move1 = kingAFile <<7;
-         long move2 = kingBitBoard <<8;
-         long move3 = kingHFile <<9;
-         long move4 = kingHFile <<1;
-
-         long move5 = kingHFile >>> 7;
-
-
-         long move6 = kingBitBoard >>>8;
-         long move7  = kingAFile >>>9;
-         long move8 = kingAFile >>>1;
-
-         long kingPsuedos = move1 | move2| move3| move4| move5| move6| move7| move8;
+         long kingPsuedos = Lookups.kingLookups[square];
 
         long kingMoves = kingPsuedos & ~allPieces;
          long kingAttacks = kingPsuedos & enemySide;
@@ -83,38 +67,9 @@ public class ChessBoard {
 
         //8 possible moves for a knight, depending on which file you are on. Cannot move into a discovered check for your own king.
 
-        long knightLocation = 1L<<square;
-
-        //checking to see if knight is on a or b file
-        long spot1Clip = Lookups.fileTables[0] & Lookups.fileTables[1] & knightLocation;
-        //checking to see if knight is on a file
-        long spot2Clip = Lookups.fileTables[0] & knightLocation;
-        //checking to see if knight is on h file
-        long spot3Clip = Lookups.fileTables[3] & knightLocation;
-        //checking to see if knight is on g or h file
-        long spot4Clip = Lookups.fileTables[3] & Lookups.fileTables[2] & knightLocation;
 
 
-        long spot5Clip = spot4Clip;
-        long spot6Clip = spot3Clip;
-        long spot7Clip = spot2Clip;
-        long spot8Clip = spot1Clip;
-
-
-        long spot1 = spot1Clip <<6;
-        long spot2 = spot2Clip <<15;
-        long spot3 = spot3Clip <<17;
-        long spot4 = spot4Clip <<10;
-
-        long spot5 = spot5Clip >>> 6;
-        long spot6 = spot6Clip >>> 15;
-        long spot7 = spot7Clip >>>17;
-        long spot8 = spot8Clip >>>10;
-
-
-
-
-        long knightPsuedos = spot1 | spot2 | spot3 | spot4 | spot5 | spot6| spot7 | spot8;
+        long knightPsuedos = Lookups.knightLookups[square];
         long knightLegals = knightPsuedos & ~allPieces;
         long knightAttacks = knightPsuedos & enemySide;
 
@@ -124,6 +79,49 @@ public class ChessBoard {
         return new long[]{knightLegals,knightAttacks};
 
 
+    }
+
+    public void initKnightLookups(){
+
+
+        for(int i =0; i<64;i++){
+
+            long knightLocation = 1L<<i;
+
+            //checking to see if knight is on a or b file
+            long spot1Clip = Lookups.fileTables[0] & Lookups.fileTables[1] & knightLocation;
+            //checking to see if knight is on a file
+            long spot2Clip = Lookups.fileTables[0] & knightLocation;
+            //checking to see if knight is on h file
+            long spot3Clip = Lookups.fileTables[3] & knightLocation;
+            //checking to see if knight is on g or h file
+            long spot4Clip = Lookups.fileTables[3] & Lookups.fileTables[2] & knightLocation;
+
+
+            long spot5Clip = spot4Clip;
+            long spot6Clip = spot3Clip;
+            long spot7Clip = spot2Clip;
+            long spot8Clip = spot1Clip;
+
+
+            long spot1 = spot1Clip <<6;
+            long spot2 = spot2Clip <<15;
+            long spot3 = spot3Clip <<17;
+            long spot4 = spot4Clip <<10;
+
+            long spot5 = spot5Clip >>> 6;
+            long spot6 = spot6Clip >>> 15;
+            long spot7 = spot7Clip >>>17;
+            long spot8 = spot8Clip >>>10;
+
+
+
+
+            long knightPsuedos = spot1 | spot2 | spot3 | spot4 | spot5 | spot6| spot7 | spot8;
+
+            Lookups.knightLookups[i] = knightPsuedos;
+
+        }
     }
 
 
@@ -156,6 +154,10 @@ public class ChessBoard {
 
 
     }
+
+
+
+
     public long[] calculateBlackPawnMoves(int square, long ownSideBitboard, long WhitePieces,long allPieces){
 
         long pawnLocation = 1L <<square;
@@ -306,6 +308,32 @@ public class ChessBoard {
 
         }
 
+    }
+
+    public void initKingTables(){
+
+        for(int i =0; i <64; i++){
+
+            long kingBitBoard = 0b1L<< i;
+            long kingAFile = kingBitBoard & Lookups.fileTables[0];
+            long kingHFile = kingBitBoard & Lookups.fileTables[3];
+
+            long move1 = kingAFile <<7;
+            long move2 = kingBitBoard <<8;
+            long move3 = kingHFile <<9;
+            long move4 = kingHFile <<1;
+
+            long move5 = kingHFile >>> 7;
+
+
+            long move6 = kingBitBoard >>>8;
+            long move7  = kingAFile >>>9;
+            long move8 = kingAFile >>>1;
+
+            long kingPsuedos = move1 | move2| move3| move4| move5| move6| move7| move8;
+
+            Lookups.kingLookups[i] = kingPsuedos;
+        }
     }
 
     long getBlockers(int index, int bitNum, long mask)
