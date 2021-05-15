@@ -417,6 +417,8 @@ public class Lookups {
         static long[] knightLookups = new long[64];
 
 
+        static long[][] wPawnLookups = new long[64][2];
+        static long[][] bPawnLookups = new long[64][2];
 
 
 

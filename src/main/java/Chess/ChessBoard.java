@@ -127,23 +127,13 @@ public class ChessBoard {
 
     public long[] calculateWhitePawnMoves(int square, long ownSideBitboard, long blackPieces,long allPieces){
 
-        long pawnLocation = 1L << square;
 
-        long oneStep = pawnLocation << 8 & ~allPieces;
+        long legalMoves = Lookups.wPawnLookups[square][0] & ~allPieces;
 
-        //checking if said pawn is on 2 rank
-        long twoSteps = ((oneStep & (Lookups.rankTables[0]<<16))<<8) & ~allPieces;
 
-        long legalMoves = oneStep | twoSteps;
 
-        //checking for if pawn is on left border
-        long pawnEastAttack = (pawnLocation & Lookups.fileTables[0])<<7;
 
-        //checking for if pawn is on right border
-        long pawnWestAttack = (pawnLocation & Lookups.fileTables[3])<<9;
-
-        long pawnAttacks = pawnEastAttack | pawnWestAttack;
-        long pawnLegalAttacks = pawnAttacks & blackPieces;
+        long pawnLegalAttacks = Lookups.wPawnLookups[square][1] & blackPieces;
 
         long whiteValidGeneral = pawnLegalAttacks | legalMoves;
 
@@ -160,22 +150,14 @@ public class ChessBoard {
 
     public long[] calculateBlackPawnMoves(int square, long ownSideBitboard, long WhitePieces,long allPieces){
 
-        long pawnLocation = 1L <<square;
 
-        long oneStep = pawnLocation >>> 8 & ~allPieces;
 
-        //checking for if said pawn is on 7th rank.
-        long twoSteps = ((oneStep & (Lookups.rankTables[0]<<40))>>>8) & ~allPieces;
+        long legalMoves = Lookups.bPawnLookups[square][0] & ~allPieces;
 
-        long legalMoves = oneStep | twoSteps;
 
-        //checking for if pawn is on left border
-        long pawnEastAttack = (pawnLocation & Lookups.fileTables[0])>>>9;
-        //checking for if pawn if on right border
-        long pawnWestAttack = (pawnLocation & Lookups.fileTables[3])>>>7;
 
-        long pawnAttacks = pawnEastAttack | pawnWestAttack;
-        long pawnLegalAttacks = pawnAttacks & WhitePieces;
+
+        long pawnLegalAttacks =  Lookups.bPawnLookups[square][1] & WhitePieces;
 
         long blackValidGeneral = pawnLegalAttacks | legalMoves;
 
@@ -184,6 +166,60 @@ public class ChessBoard {
 
 
 
+    }
+
+    public void initPawnLookups(boolean white){
+
+        for(int i =0; i<64;i++) {
+            if (white) {
+
+                long pawnLocation = 1L << i;
+
+                long oneStep = pawnLocation << 8;
+
+                //checking if said pawn is on 2 rank
+                long twoSteps = ((oneStep & (Lookups.rankTables[0]<<16))<<8);
+
+                long legalMoves = oneStep | twoSteps;
+
+                //checking for if pawn is on left border
+                long pawnEastAttack = (pawnLocation & Lookups.fileTables[0])<<7;
+
+                //checking for if pawn is on right border
+                long pawnWestAttack = (pawnLocation & Lookups.fileTables[3])<<9;
+
+                long pawnAttacks = pawnEastAttack | pawnWestAttack;
+
+                Lookups.wPawnLookups[i] = new long[]{ legalMoves,pawnAttacks};
+
+
+
+
+            }
+            else {
+                long pawnLocation = 1L <<i;
+
+                long oneStep = pawnLocation >>> 8;
+
+                //checking for if said pawn is on 7th rank.
+                long twoSteps = ((oneStep & (Lookups.rankTables[0]<<40))>>>8);
+
+                long legalMoves = oneStep | twoSteps;
+
+                //checking for if pawn is on left border
+                long pawnEastAttack = (pawnLocation & Lookups.fileTables[0])>>>9;
+                //checking for if pawn if on right border
+                long pawnWestAttack = (pawnLocation & Lookups.fileTables[3])>>>7;
+
+                long pawnAttacks = pawnEastAttack | pawnWestAttack;
+
+
+                Lookups.bPawnLookups[i] = new long[]{ legalMoves,pawnAttacks};
+
+
+
+            }
+        }
     }
 
 

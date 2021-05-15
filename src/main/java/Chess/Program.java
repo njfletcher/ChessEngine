@@ -23,6 +23,11 @@ public class Program {
         board.initMagicAttackTables(false);
         board.initKingTables();
         board.initKnightLookups();
+        board.initPawnLookups(true);
+        board.initPawnLookups(false);
+        
+        
+
 
 
 
