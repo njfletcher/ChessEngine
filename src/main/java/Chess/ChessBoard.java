@@ -184,25 +184,8 @@ public class ChessBoard {
 
     }
 
-    public long[] calculateRookMoves(int square, long ownSideBitboard, long oppositePieces, long allPieces){
 
-        long moves= calcCross(square, allPieces);
-
-        return new long[]{moves & ~allPieces,(moves & ~ownSideBitboard) & oppositePieces};
-    }
-
-    public long[] calculateBishopMoves(int square, long ownSide, long oppositePieces, long allPieces){
-
-
-        long moves = calcDiagonal(square,allPieces);
-
-        return new long[]{moves & ~allPieces,(moves & ~ownSide) & oppositePieces};
-
-
-
-    }
-
-    public long[] calculateBishopMovesPt2(int square, long ownSide, long oppositeSide, long allPieces){
+    public long[] calculateBishopMoves(int square, long ownSide, long oppositeSide, long allPieces){
 
         allPieces &= Lookups.bishopMasks[square];
 
@@ -217,7 +200,20 @@ public class ChessBoard {
 
     }
 
-    public long[] calculateRookMovesPt2(int square, long ownSide, long oppoSide, long allPieces){
+      /*public long[] calculateBishopMoves(int square, long ownSide, long oppositePieces, long allPieces){
+
+
+        long moves = calcDiagonal(square,allPieces);
+
+        return new long[]{moves & ~allPieces,(moves & ~ownSide) & oppositePieces};
+
+
+
+    }
+
+     */
+
+    public long[] calculateRookMoves(int square, long ownSide, long oppoSide, long allPieces){
 
         allPieces &= Lookups.rookMasks[square];
 
@@ -228,20 +224,47 @@ public class ChessBoard {
         long moves= Lookups.rookMagicAttacks[square][(int)allPieces];
 
 
-        return new long[]{moves & ~allPieces,moves & oppoSide};
+        return new long[]{moves & ~allPieces,moves  & oppoSide};
     }
 
-    public long[] calculateQueenMovesPt2(int square, long ownSide, long oppoSide, long allPieces){
+      /*public long[] calculateRookMoves(int square, long ownSideBitboard, long oppositePieces, long allPieces){
 
-        long[] diags = calculateBishopMovesPt2(square,ownSide, oppoSide,allPieces);
+        long moves= calcCross(square, allPieces);
 
-        long[] cross = calculateRookMovesPt2(square,ownSide, oppoSide,allPieces);
+        return new long[]{moves & ~allPieces,(moves & ~ownSideBitboard) & oppositePieces};
+    }
+
+     */
+
+    public long[] calculateQueenMoves(int square, long ownSide, long oppoSide, long allPieces){
+
+        long[] diags = calculateBishopMoves(square,ownSide, oppoSide,allPieces);
+
+        long[] cross = calculateRookMoves(square,ownSide, oppoSide,allPieces);
 
 
         return new long[]{diags[0] | cross[0],diags[1] | cross[1]};
 
 
     }
+    /* public long[] calculateQueenMoves(int square, long ownSideBitBoard, long oppositeSidePieces, long allPieces ){
+
+        long crosses = calcCross(square,allPieces);
+
+        long diagonals = calcDiagonal(square,allPieces);
+
+        long moves = crosses | diagonals;
+
+
+
+
+        return new long[]{moves & ~allPieces,(moves & oppositeSidePieces )};
+
+    }
+
+    */
+
+
 
     public void initMagicAttackTables(boolean isBishop){
 
@@ -264,7 +287,7 @@ public class ChessBoard {
 
                     long occupancy = getBlockers(block,bitNum,usedMask);
 
-                    int magicKey= (int) (occupancy * Lookups.bishopMagics[square] >>> 64 - Lookups.bishopIndexBits[square]);
+                    int magicKey= (int) ((occupancy * Lookups.bishopMagics[square]) >>> (64 - Lookups.bishopIndexBits[square]));
 
                     Lookups.bishopMagicAttacks[square][magicKey] = calcDiagonal(square, occupancy);
 
@@ -273,7 +296,7 @@ public class ChessBoard {
 
                     long occupancy = getBlockers(block,bitNum,usedMask);
 
-                    int magicKey= (int) (occupancy * Lookups.rookMagics[square] >>> 64 - Lookups.rookIndexBits[square]);
+                    int magicKey= (int) ((occupancy * Lookups.rookMagics[square]) >>> (64 - Lookups.rookIndexBits[square]));
 
                     Lookups.rookMagicAttacks[square][magicKey] = calcCross(square, occupancy);
 
@@ -330,25 +353,6 @@ public class ChessBoard {
 
 
     }
-
-
-
-    public long[] calculateQueenMoves(int square, long ownSideBitBoard, long oppositeSidePieces, long allPieces ){
-
-        long crosses = calcCross(square,allPieces);
-
-        long diagonals = calcDiagonal(square,allPieces);
-
-        long moves = crosses | diagonals;
-
-
-
-
-        return new long[]{moves & ~allPieces,(moves & oppositeSidePieces )};
-
-    }
-
-
 
 
 
@@ -793,6 +797,8 @@ public class ChessBoard {
 
         return indices;
     }
+
+
 
     public static boolean checkForCheckmate(long[] pieces, long castles,int enPass, int side){
 

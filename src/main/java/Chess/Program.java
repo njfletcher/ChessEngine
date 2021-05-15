@@ -26,9 +26,11 @@ public class Program {
 
         long ownside = 1<<63;
         long oppo = 1<< 56;
-        ChessBoard.printBitBoard(board.calculateBishopMovesPt2(63,ownside,oppo,ownside | oppo)[0]);
+        //ChessBoard.printBitBoard(board.calculateQueenMovesPt2(56,0L,1L<<62,1L<<49)[0]);
 
-        ChessBoard.printBitBoard(board.calculateBishopMovesPt2(63,ownside,oppo,ownside | oppo)[1]);
+
+
+
 
 
 

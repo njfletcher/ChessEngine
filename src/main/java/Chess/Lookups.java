@@ -246,6 +246,7 @@ public class Lookups {
 
 
 
+
          public static int[] rookIndexBits = {
 
                 12, 11, 11, 11, 11, 11, 11, 12,
