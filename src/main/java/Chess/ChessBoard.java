@@ -225,6 +225,7 @@ public class ChessBoard {
 
     public long[] calculateBishopMoves(int square, long ownSide, long oppositeSide, long allPieces){
 
+        long copy = allPieces;
         allPieces &= Lookups.bishopMasks[square];
 
         allPieces *= Lookups.bishopMagics[square];
@@ -233,7 +234,7 @@ public class ChessBoard {
 
         long moves = Lookups.bishopMagicAttacks[square][(int)allPieces];
 
-        return new long[]{moves & ~allPieces,moves  & oppositeSide};
+        return new long[]{moves & ~copy,moves  & oppositeSide};
 
 
     }
@@ -253,6 +254,7 @@ public class ChessBoard {
 
     public long[] calculateRookMoves(int square, long ownSide, long oppoSide, long allPieces){
 
+        long copy = allPieces;
         allPieces &= Lookups.rookMasks[square];
 
         allPieces *= Lookups.rookMagics[square];
@@ -262,7 +264,11 @@ public class ChessBoard {
         long moves= Lookups.rookMagicAttacks[square][(int)allPieces];
 
 
-        return new long[]{moves & ~allPieces,moves  & oppoSide};
+
+
+
+
+        return new long[]{moves & ~copy,moves  & oppoSide};
     }
 
       /*public long[] calculateRookMoves(int square, long ownSideBitboard, long oppositePieces, long allPieces){
@@ -743,6 +749,8 @@ public class ChessBoard {
 
         }
 
+        //evaluationWhite += (int) (Math.random()*100) +1;
+
         return evaluationWhite -evaluationBlack + simpleMatScore + mobilityScore;
 
 
@@ -842,8 +850,22 @@ public class ChessBoard {
     }
 
 
+    public static ArrayList<Integer> indexSetBits(long number){
 
-    public static ArrayList<Integer> indexSetBits(Long bitboard){
+        final  ArrayList<Integer> positions = new ArrayList<>();
+        int position = 0;
+        while (number != 0) {
+            if ((number & 1L) != 0) {
+                positions.add(position);
+            }
+            position++;
+            number = number >>> 1;
+        }
+        return positions;
+    }
+
+
+    /*public static ArrayList<Integer> indexSetBits(Long bitboard){
 
         ArrayList<Integer> indices = new ArrayList<>();
 
@@ -862,6 +884,8 @@ public class ChessBoard {
         return indices;
     }
 
+
+     */
 
 
     public static boolean checkForCheckmate(long[] pieces, long castles,int enPass, int side){
