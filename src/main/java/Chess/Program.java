@@ -29,6 +29,7 @@ public class Program {
 
 
 
+
          InputStream is =  Lichess.sendRequest("GET","/api/stream/event");
 
         final BufferedReader reader = new BufferedReader(
@@ -77,6 +78,8 @@ public class Program {
 
         }
         reader.close();
+
+
 
 
 
@@ -309,6 +312,14 @@ public class Program {
 
 
         sortMoves(possibleMoves,depth);
+
+        if(depth==4){
+            for(Move m : possibleMoves) {
+                System.out.println(m);
+            }
+        }
+
+
 
         int bestVal = isMaxPlayer ? Integer.MIN_VALUE : Integer.MAX_VALUE;
 

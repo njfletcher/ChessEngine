@@ -117,7 +117,8 @@ public class Move{
                 + "Piece: " + pieceType + "\n" +
                 "EnPass Sqaure: " + enPassSquare +
                 "\n" + "Capture/Castle/Promotion/enPassant/Check" + "\n" +
-                (capture ? 1:0) + (castle ? 1:0) + (promotion ? 1:0) + (enPassant ? 1:0) + (check ? 1:0);
+                (capture ? 1:0) + (castle ? 1:0) + (promotion ? 1:0) + (enPassant ? 1:0) + (check ? 1:0) + "\n" +
+                "Score: " + evalScore;
 
 
     }

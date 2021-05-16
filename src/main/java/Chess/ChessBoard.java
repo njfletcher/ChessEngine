@@ -669,6 +669,13 @@ public class ChessBoard {
         long whiteAttack = board.generateSideAttackMask(bitboards,-1,teamLongs[0],teamLongs[1],teamLongs[2]);
 
 
+       /* System.out.println(indexSetBits(bitboards[10]).size()- indexSetBits(bitboards[4]).size());
+        System.out.println(indexSetBits(bitboards[7]).size()- indexSetBits(bitboards[1]).size());
+        System.out.println(indexSetBits(bitboards[8]).size()- indexSetBits(bitboards[2]).size());
+        System.out.println(indexSetBits(bitboards[11]).size()- indexSetBits(bitboards[5]).size());
+        System.out.println(indexSetBits(bitboards[6]).size()- indexSetBits(bitboards[0]).size());
+
+        */
         int simpleMatScore = (9 * (indexSetBits(bitboards[10]).size()- indexSetBits(bitboards[4]).size())) +
                 (5 * (indexSetBits(bitboards[7]).size()- indexSetBits(bitboards[1]).size())) +
                 (3 * (indexSetBits(bitboards[8]).size()- indexSetBits(bitboards[2]).size())) +
@@ -676,7 +683,12 @@ public class ChessBoard {
                 (1 * (indexSetBits(bitboards[6]).size()- indexSetBits(bitboards[0]).size()));
 
 
-        int mobilityScore = whiteMoveSize - blackMoveSize;
+
+
+
+        int mobilityScore = (whiteMoveSize - blackMoveSize) / 10;
+
+
 
 
 
@@ -684,8 +696,8 @@ public class ChessBoard {
 
         //check to see if knights are on a or h files, which is punished.
 
-        evaluationWhite -= indexSetBits(bitboards[8] & (Lookups.fileTables[Lookups.fileTables.length-1] & (Lookups.fileTables[Lookups.fileTables.length-1]<<7))).size();
-        evaluationBlack -= indexSetBits(bitboards[2] & (Lookups.fileTables[Lookups.fileTables.length-1] & (Lookups.fileTables[Lookups.fileTables.length-1]<<7))).size();
+        evaluationWhite -= indexSetBits((bitboards[8] & Lookups.fileTables[0]) | (bitboards[8] & Lookups.fileTables[3]) ).size();
+        evaluationBlack -= indexSetBits((bitboards[2] & Lookups.fileTables[0]) | (bitboards[2] & Lookups.fileTables[3]) ).size();
 
 
 
@@ -749,7 +761,9 @@ public class ChessBoard {
 
         }
 
-        //evaluationWhite += (int) (Math.random()*100) +1;
+
+
+
 
         return evaluationWhite -evaluationBlack + simpleMatScore + mobilityScore;
 
