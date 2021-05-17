@@ -12,6 +12,8 @@ import com.google.gson.JsonObject;
 
 public class Program {
 
+    //double pawn push error.
+
     public static void main(String[] args) throws Exception {
 
 
@@ -25,12 +27,12 @@ public class Program {
         board.initKnightLookups();
         board.initPawnLookups(true);
         board.initPawnLookups(false);
-        
 
 
+        //ChessBoard.printBitBoard( board.calculateWhitePawnMoves(9,0L,0L,1l<<25)[0]);
 
 
-         InputStream is =  Lichess.sendRequest("GET","/api/stream/event");
+       /* InputStream is =  Lichess.sendRequest("GET","/api/stream/event");
 
         final BufferedReader reader = new BufferedReader(
                 new InputStreamReader(is));
@@ -84,9 +86,7 @@ public class Program {
 
 
 
-
-
-
+        */
 
 
     }
@@ -111,6 +111,9 @@ public class Program {
 
         String fen = coderollsJsonObject.get("initialFen").toString().replaceAll("\"","");
 
+
+
+        GameState.resetBoards();
 
         if(fen.equals("startpos")){
             parser.fenToBitboards("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
@@ -157,7 +160,7 @@ public class Program {
 
 
 
-                        System.out.print("Your Turn");
+                        System.out.println("Challenger Turn");
 
 
                         //making sure that the incoming events are moves not chats.
@@ -171,13 +174,14 @@ public class Program {
 
                         long[] movePieces1 = GameState.generatePiecesArray();
 
-                        /*for(int i =0; i<12;i++){
+                        System.out.println("Before: ");
+                        for(int i =0; i<12;i++){
                             System.out.println(i);
 
                             ChessBoard.printBitBoard(movePieces1[i]);
                         }
 
-                         */
+
 
 
 
@@ -189,19 +193,22 @@ public class Program {
 
                         long[] movePieces2 = GameState.generatePiecesArray();
 
-                        /*for(int i =0; i<12;i++){
+
+                        System.out.println("After: ");
+                        for(int i =0; i<12;i++){
                             System.out.println(i);
 
                             ChessBoard.printBitBoard(movePieces2[i]);
                         }
 
-                         */
+
 
 
 
 
                         GameState.sideToMove *= -1;
 
+                        System.out.println("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
                     }
 
                 }
@@ -209,16 +216,17 @@ public class Program {
             if(GameState.botSide== GameState.sideToMove){
 
 
-                System.out.print("My Turn");
+                System.out.println("Bot Turn");
                 GameState.updatePiecesArray();
 
-               /* for(int i =0; i<12;i++){
+                System.out.println("Before: ");
+                for(int i =0; i<12;i++){
                     System.out.println(i);
 
                     ChessBoard.printBitBoard(GameState.statePieces[i]);
                 }
 
-                */
+
 
 
 
@@ -238,16 +246,18 @@ public class Program {
 
                 Move move = miniMax(GameState.statePieces, castle, enPassant, 4, sideTurn, isMaximizer, Integer.MIN_VALUE, Integer.MAX_VALUE).first();
 
+                System.out.println(move);
 
-                /*for(int i =0; i<12;i++){
+                System.out.println("After: ");
+                for(int i =0; i<12;i++){
                     System.out.println(i);
 
                     ChessBoard.printBitBoard(move.bitboardCopys[i]);
                 }
 
-                 */
+                 
 
-                System.out.println(move);
+
 
                 GameState.statePieces = move.bitboardCopys;
 
@@ -273,6 +283,7 @@ public class Program {
                 GameState.sideToMove *= -1;
 
 
+                System.out.println("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
             }
 
 
@@ -281,21 +292,6 @@ public class Program {
         }
 
     }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
     public static MovePair miniMax(long[] pieces,long castleRights,int enPassSquare, int depth, int side, boolean isMaxPlayer, int alpha, int beta) {
 
         if (depth == 0 || (ChessBoard.checkForCheckmate(pieces,castleRights,enPassSquare,side)== true)|| (ChessBoard.checkForStalemate(pieces,castleRights,enPassSquare,side)== true)) {
@@ -318,6 +314,8 @@ public class Program {
                 System.out.println(m);
             }
         }
+
+
 
 
 

@@ -187,7 +187,7 @@ public class Lichess {
             //black and white kings, check for castles. Regardless null castle rights for side bc king is moving
             if (movePieceType == 9) {
 
-                if (move == "e1g1") {
+                if (move.equals("e1g1")) {
 
                     GameState.statePieces[7] &= ~(1L << 7);
                     GameState.statePieces[7] |= (1L << 5);
@@ -195,7 +195,7 @@ public class Lichess {
 
                 }
 
-                if (move == "e1c1") {
+                if (move.equals("e1c1")) {
 
                     GameState.statePieces[7] &= ~(1L);
                     GameState.statePieces[7] |= (1L << 3);
@@ -207,14 +207,14 @@ public class Lichess {
 
             if (movePieceType == 3) {
 
-                if (move == "e8g8") {
+                if (move.equals("e8g8")) {
 
                     GameState.statePieces[1] &= ~(1L << 63);
                     GameState.statePieces[1] |= (1L << 61);
 
                 }
 
-                if (move == "e8c8") {
+                if (move.equals("e8c8")) {
 
 
                     GameState.statePieces[1] &= ~(1L << 56);

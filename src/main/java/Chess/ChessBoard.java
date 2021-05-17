@@ -130,6 +130,11 @@ public class ChessBoard {
 
         long legalMoves = Lookups.wPawnLookups[square][0] & ~allPieces;
 
+        if((legalMoves & (1L<< square +8)) ==0){
+
+            legalMoves &= ~(1L<<square + 16);
+        }
+
 
 
 
@@ -155,7 +160,10 @@ public class ChessBoard {
         long legalMoves = Lookups.bPawnLookups[square][0] & ~allPieces;
 
 
+        if((legalMoves & (1L<< square -8)) ==0){
 
+            legalMoves &= ~(1L<<square - 16);
+        }
 
         long pawnLegalAttacks =  Lookups.bPawnLookups[square][1] & WhitePieces;
 
@@ -665,6 +673,9 @@ public class ChessBoard {
         int blackMoveSize= Program.generateBlackMoves(bitboards,castleRights,enPass).size();
         int whiteMoveSize= Program.generateWhiteMoves(bitboards,castleRights,enPass).size();
 
+
+
+
         long blackAttack = board.generateSideAttackMask(bitboards,1,teamLongs[0],teamLongs[1],teamLongs[2]);
         long whiteAttack = board.generateSideAttackMask(bitboards,-1,teamLongs[0],teamLongs[1],teamLongs[2]);
 
@@ -684,15 +695,7 @@ public class ChessBoard {
 
 
 
-
-
-        int mobilityScore = (whiteMoveSize - blackMoveSize) / 10;
-
-
-
-
-
-
+        int mobilityScore = (whiteMoveSize - blackMoveSize) / 15;
 
         //check to see if knights are on a or h files, which is punished.
 
@@ -702,8 +705,8 @@ public class ChessBoard {
 
 
         //check for centralized/ developed pawns.
-        evaluationWhite += indexSetBits(bitboards[6] & Lookups.evalTables[0]).size();
-        evaluationBlack += indexSetBits(bitboards[0] & Lookups.evalTables[0]).size();
+        //evaluationWhite += indexSetBits(bitboards[6] & Lookups.evalTables[0]).size();
+        //evaluationBlack += indexSetBits(bitboards[0] & Lookups.evalTables[0]).size();
 
 
         //check for stacked pawns

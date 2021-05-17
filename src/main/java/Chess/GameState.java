@@ -1,5 +1,7 @@
 package Chess;
 
+import java.util.ArrayList;
+
 public class GameState {
 
 
@@ -52,6 +54,23 @@ public class GameState {
         wKing = statePieces[9];
         wQueens = statePieces[10];
         wBishops = statePieces[11];
+
+    }
+
+    public static void resetBoards(){
+
+        wPawns =0L;
+        wRooks = 0L;
+        wKnights = 0L;
+        wKing = 0L;
+        wBishops = 0L;
+        wQueens = 0L;
+        bPawns = 0L;
+        bKnights = 0L;
+        bKing = 0L;
+        bBishops = 0L;
+        bQueens =0L;
+        bRooks =0L;
 
     }
 
@@ -112,6 +131,13 @@ public class GameState {
 
     //holds square of possible en passant target squares.
     public static int enPassant = 64;
+
+
+
+    //holds history of moves made over course of a game, used to check for tri fold repetition.
+    //after move is made by either bot or opponent store here.
+    //in eval, call statically and see if the boards match two others, if so give bad score.
+    public static ArrayList<Move> moveHistory;
 
 
 
