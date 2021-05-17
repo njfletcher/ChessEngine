@@ -52,13 +52,15 @@ public class Move{
     }
 
     //castles
-    public Move(long[] copies,long castleCopy, int enPassantSquare){
+    public Move(long[] copies,long castleCopy, int enPassantSquare, int to, int from){
 
         bitboardCopys = copies;
         castle = true;
-        pieceType =1;
+        pieceType =1111;
         castleRightsCopy = castleCopy;
         enPassSquare = enPassantSquare;
+        squareTo =to;
+        squareFrom =from;
 
     }
 

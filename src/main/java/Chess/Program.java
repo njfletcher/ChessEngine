@@ -29,10 +29,10 @@ public class Program {
         board.initPawnLookups(false);
 
 
-        //ChessBoard.printBitBoard( board.calculateWhitePawnMoves(9,0L,0L,1l<<25)[0]);
 
 
-       /* InputStream is =  Lichess.sendRequest("GET","/api/stream/event");
+
+       InputStream is =  Lichess.sendRequest("GET","/api/stream/event");
 
         final BufferedReader reader = new BufferedReader(
                 new InputStreamReader(is));
@@ -86,7 +86,9 @@ public class Program {
 
 
 
-        */
+
+
+
 
 
     }
@@ -307,7 +309,7 @@ public class Program {
 
 
 
-        sortMoves(possibleMoves,depth);
+        //sortMoves(possibleMoves,depth);
 
         if(depth==4){
             for(Move m : possibleMoves) {
@@ -491,10 +493,10 @@ public class Program {
 
                     //Change castle rights if the rook is being moved, depending on what rook is being moved.
                     if(i==1){
-                        if(num == 7){
+                        if(num == 63){
                             castleRightsCopy &= ~(1L<<1);
                         }
-                        if(num ==0){
+                        if(num ==56){
                             castleRightsCopy &= ~(1L);
                         }
                     }
@@ -604,10 +606,10 @@ public class Program {
                     long castleRightsCopy = castleRights;
 
                     //if the white rook is being attacked, white's castle rights.
-                    if(index == 7 & bit == 63){
+                    if(index == 7 & bit == 7){
                         castleRightsCopy &= ~(1L<<3);
                     }
-                    if(index == 7 & bit == 56){
+                    if(index == 7 & bit == 0){
                         castleRightsCopy &= ~(1L<<2);
                     }
 
@@ -679,7 +681,8 @@ public class Program {
                     long[] teamCopies = generateTeamLongs(copy);
 
                     //attack map check should be per side, not one thing.
-                    if(!(((board.generateSideAttackMask(copy,-1,teamCopies[0],teamCopies[1],teamCopies[2]) & Lookups.castleTables[3]) != 0) | ((teamCopies[2] & Lookups.castleTables[3])) != 0 )) {
+                    if(!(((board.generateSideAttackMask(copy,-1,teamCopies[0],teamCopies[1],teamCopies[2]) & Lookups.castleTables[3]) != 0) | ((teamCopies[2] & Lookups.castleTables[3])) != 0 )
+                            & ((board.checkForCheck(copy[3],board.generateSideAttackMask(copy,-1,teamCopies[0],teamCopies[1],teamCopies[2])))==false)){
                         //queenside black castle
                         if ((castleRights & 0b1L) != 0) {
 
@@ -703,7 +706,7 @@ public class Program {
 
 
                             if ((board.checkForCheck(copy[3], board.generateSideAttackMask(copy, -1, teamCopiesCastle[0], teamCopiesCastle[1], teamCopiesCastle[2]))) == false) {
-                                legalMoves.add(new Move(copyArray(copy), castleRightsCopy,enPassTarget));
+                                legalMoves.add(new Move(copyArray(copy), castleRightsCopy,enPassTarget,60,58));
                             }
 
                             copy[3] &= ~(1L << 58);
@@ -714,7 +717,8 @@ public class Program {
 
                         }
                     }
-                    if(!(((board.generateSideAttackMask(copy,-1,teamCopies[0],teamCopies[1],teamCopies[2]) & Lookups.castleTables[2]) != 0) | ((teamCopies[2] & Lookups.castleTables[2])) != 0 )){
+                    if(!(((board.generateSideAttackMask(copy,-1,teamCopies[0],teamCopies[1],teamCopies[2]) & Lookups.castleTables[2]) != 0) | ((teamCopies[2] & Lookups.castleTables[2])) != 0 )
+                            & ((board.checkForCheck(copy[3],board.generateSideAttackMask(copy,-1,teamCopies[0],teamCopies[1],teamCopies[2])))==false)){
                         //kingside black castle
                         if((castleRights & 0b10L) != 0){
 
@@ -735,7 +739,7 @@ public class Program {
 
 
                             if ((board.checkForCheck(copy[3], board.generateSideAttackMask(copy,-1,teamCopiesCastle[0],teamCopiesCastle[1],teamCopiesCastle[2]))) == false) {
-                                legalMoves.add(new Move(copyArray(copy),castleRightsCopy,enPassTarget));
+                                legalMoves.add(new Move(copyArray(copy),castleRightsCopy,enPassTarget,60,62));
                             }
 
                             copy[3] &= ~(1L <<62);
@@ -888,10 +892,10 @@ public class Program {
 
                     //Change castle rights if the rook is being moved
                     if(i==7){
-                        if(num == 63){
+                        if(num == 7){
                             castleRightsCopy &= ~(1L<<3);
                         }
-                        if(num ==56){
+                        if(num ==0){
                             castleRightsCopy &= ~(1L<<2);
                         }
                     }
@@ -992,10 +996,10 @@ public class Program {
 
                     long castleRightsCopy = castleRights;
 
-                    if(index == 1 & bit == 7){
+                    if(index == 1 & bit == 63){
                         castleRightsCopy &= ~(1L<<1);
                     }
-                    if(index == 1 & bit == 0){
+                    if(index == 1 & bit == 56){
                         castleRightsCopy &= ~(1L);
                     }
 
@@ -1064,7 +1068,8 @@ public class Program {
                     long[] teamCopies = generateTeamLongs(copy);
 
                     //attack map check should be per side, not one thing.
-                    if(!(((board.generateSideAttackMask(copy,1,teamCopies[0],teamCopies[1],teamCopies[2]) & Lookups.castleTables[0]) != 0) | ((teamCopies[2] & Lookups.castleTables[0])) != 0 )) {
+                    if(!(((board.generateSideAttackMask(copy,1,teamCopies[0],teamCopies[1],teamCopies[2]) & Lookups.castleTables[0]) != 0) | ((teamCopies[2] & Lookups.castleTables[0])) != 0 )
+                    & (board.checkForCheck(copy[9],board.generateSideAttackMask(copy,1,teamCopies[0],teamCopies[1],teamCopies[2]))==false)) {
                         //queenside white castle
                         if ((castleRights & 0b100L) != 0) {
 
@@ -1085,7 +1090,7 @@ public class Program {
 
 
                             if ((board.checkForCheck(copy[9], board.generateSideAttackMask(copy, 1, teamCopiesCastle[0], teamCopiesCastle[1], teamCopiesCastle[2]))) == false) {
-                                legalMoves.add(new Move(copyArray(copy), castleRightsCopy,enPassTarget));
+                                legalMoves.add(new Move(copyArray(copy), castleRightsCopy,enPassTarget,4,2));
                             }
 
                             copy[9] &= ~(1L << 2);
@@ -1096,7 +1101,8 @@ public class Program {
 
                         }
                     }
-                    if(!(((board.generateSideAttackMask(copy,1,teamCopies[0],teamCopies[1],teamCopies[2]) & Lookups.castleTables[1]) != 0) | ((teamCopies[2] & Lookups.castleTables[1])) != 0 )) {
+                    if(!(((board.generateSideAttackMask(copy,1,teamCopies[0],teamCopies[1],teamCopies[2]) & Lookups.castleTables[1]) != 0) | ((teamCopies[2] & Lookups.castleTables[1])) != 0 )
+                            & (board.checkForCheck(copy[9],board.generateSideAttackMask(copy,1,teamCopies[0],teamCopies[1],teamCopies[2]))==false)) {
                         //kingside white castle
                         if ((castleRights & 0b1000L) != 0) {
 
@@ -1117,7 +1123,7 @@ public class Program {
 
 
                             if ((board.checkForCheck(copy[9], board.generateSideAttackMask(copy, 1, teamCopiesCastle[0], teamCopiesCastle[1], teamCopiesCastle[2]))) == false) {
-                                legalMoves.add(new Move(copyArray(copy), castleRightsCopy,enPassTarget));
+                                legalMoves.add(new Move(copyArray(copy), castleRightsCopy,enPassTarget,4,6));
                             }
 
                             copy[9] &= ~(1L << 6);
