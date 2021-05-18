@@ -543,9 +543,7 @@ public class ChessBoard {
 
 
             for(Integer num: indices){
-                long[] pawnAttacks = calculateBlackPawnMoves(num,black,white,all);
-                attackMap |= pawnAttacks[1];
-                
+                attackMap |= calculateBlackPawnMoves(num,black,white,all)[1];
 
             }
 
@@ -553,44 +551,34 @@ public class ChessBoard {
 
             indices = indexSetBits(pieces[1]);
             for(Integer num: indices){
-                long[] rookAttacks = calculateRookMoves(num,black,white,all);
-                attackMap |= rookAttacks[1];
-
+                attackMap |=  calculateRookMoves(num,black,white,all)[1];
 
             }
 
 
             indices = indexSetBits(pieces[2]);
             for(Integer num: indices){
-                long[] knightAttacks = calculateKnightMoves(num,black,white,all);
-                attackMap |= knightAttacks[1];
-
+                attackMap |=  calculateKnightMoves(num,black,white,all)[1];
 
             }
 
 
             indices = indexSetBits(pieces[3]);
             for(Integer num: indices){
-                long[] kingAttacks = calculateKingMoves(num,black,white,all);
-                attackMap |= kingAttacks[1];
-
+                attackMap |= calculateKingMoves(num,black,white,all)[1];
 
             }
 
             indices = indexSetBits(pieces[4]);
 
             for(Integer num: indices){
-                long[] queenAttacks = calculateQueenMoves(num,black,white,all);
-                attackMap |= queenAttacks[1];
-
+                attackMap |= calculateQueenMoves(num,black,white,all)[1];
 
             }
 
             indices = indexSetBits(pieces[5]);
             for(Integer num: indices){
-                long[] bishopAttacks = calculateBishopMoves(num,black,white,all);
-                attackMap |= bishopAttacks[1];
-
+                attackMap |= calculateBishopMoves(num,black,white,all)[1];
 
             }
 
@@ -606,46 +594,41 @@ public class ChessBoard {
             ArrayList<Integer> indices = indexSetBits(pieces[6]);
 
             for(Integer num: indices){
-                long[] pawnAttacks = calculateWhitePawnMoves(num,white,black,all);
-                attackMap |= pawnAttacks[1];
+                attackMap |=calculateWhitePawnMoves(num,white,black,all)[1];
+
             }
 
             indices = indexSetBits(pieces[7]);
             for(Integer num: indices){
-                long[] rookAttacks = calculateRookMoves(num,white,black,all);
-                attackMap |= rookAttacks[1];
+                attackMap |= calculateRookMoves(num,white,black,all)[1];
+
             }
 
 
             indices = indexSetBits(pieces[8]);
             for(Integer num: indices){
-                long[] knightAttacks = calculateKnightMoves(num,white,black,all);
-                attackMap |= knightAttacks[1];
+                attackMap |= calculateKnightMoves(num,white,black,all)[1];
+
             }
 
 
             indices = indexSetBits(pieces[9]);
             for(Integer num: indices){
-                long[] kingAttacks = calculateKingMoves(num,white,black,all);
-                attackMap |= kingAttacks[1];
+                attackMap |= calculateKingMoves(num,white,black,all)[1];
+
             }
 
             indices = indexSetBits(pieces[10]);
 
             for(Integer num: indices){
-                long[] queenAttacks = calculateQueenMoves(num,white,black,all);
-
-                attackMap |= queenAttacks[1];
-
+                attackMap |= calculateQueenMoves(num,white,black,all)[1];
 
             }
 
             indices = indexSetBits(pieces[11]);
             for(Integer num: indices){
-                long[] bishopAttacks = calculateBishopMoves(num,white,black,all);
+                attackMap |= calculateBishopMoves(num,white,black,all)[1];
 
-
-                attackMap |= bishopAttacks[1];
             }
 
             return attackMap;
@@ -660,6 +643,13 @@ public class ChessBoard {
         ChessBoard board = new ChessBoard();
 
         long[] teamLongs = Program.generateTeamLongs(bitboards);
+
+
+
+        ArrayList<Integer> blackPindices = indexSetBits(bitboards[0]);
+
+        ArrayList<Integer> whitePindices = indexSetBits(bitboards[6]);
+
 
 
 
@@ -691,7 +681,7 @@ public class ChessBoard {
                 (5 * (indexSetBits(bitboards[7]).size()- indexSetBits(bitboards[1]).size())) +
                 (3 * (indexSetBits(bitboards[8]).size()- indexSetBits(bitboards[2]).size())) +
                 (3 * (indexSetBits(bitboards[11]).size()- indexSetBits(bitboards[5]).size())) +
-                (1 * (indexSetBits(bitboards[6]).size()- indexSetBits(bitboards[0]).size()));
+                (1 * (whitePindices.size()- blackPindices.size()));
 
 
 
@@ -710,21 +700,51 @@ public class ChessBoard {
 
 
         //check for stacked pawns
-         for(Integer num: indexSetBits(bitboards[0])){
+       /* for(int i =0; i<blackPindices.size()-1;i++){
 
-             if((((1L<<num)>>8) & bitboards[0]) != 0){
+            if(blackPindices.get(i)== blackPindices.get(i+1) + 8){
+                evaluationBlack-= 1;
+            }
+        }
+        for(int i =0; i<whitePindices.size()-1;i++){
 
-                 evaluationBlack-= 1;
-             }
-         }
-
-        for(Integer num: indexSetBits(bitboards[6])){
-
-            if((((1L<<num)<<8) & bitboards[6]) != 0){
-
+            if(whitePindices.get(i)== whitePindices.get(i+1) + 8){
                 evaluationWhite-= 1;
             }
         }
+
+        */
+
+        int random =0;
+
+        if(GameState.moveCount>=3){
+
+            random += ((Math.random() * 2) + 1) /2;
+        }
+
+        if(GameState.moveHistory != null){
+
+            int count =0;
+            for(long[] longs: GameState.moveHistory){
+
+                if(Arrays.equals(longs,bitboards)){
+                    count++;
+                }
+
+            }
+            if(count>=3){
+                if(GameState.botSide ==1){
+                    evaluationWhite =-500;
+                }
+                else{
+                    evaluationBlack =-500;
+                }
+            }
+        }
+
+
+
+
 
 
         //checkmates
@@ -768,7 +788,7 @@ public class ChessBoard {
 
 
 
-        return evaluationWhite -evaluationBlack + simpleMatScore + mobilityScore;
+        return evaluationWhite -evaluationBlack + simpleMatScore + random;
 
 
 

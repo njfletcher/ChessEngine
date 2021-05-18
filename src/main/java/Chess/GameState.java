@@ -57,7 +57,7 @@ public class GameState {
 
     }
 
-    public static void resetBoards(){
+    public static void resetInfo(){
 
         wPawns =0L;
         wRooks = 0L;
@@ -71,6 +71,8 @@ public class GameState {
         bBishops = 0L;
         bQueens =0L;
         bRooks =0L;
+
+        castleRights =0b0000L;
 
     }
 
@@ -137,7 +139,10 @@ public class GameState {
     //holds history of moves made over course of a game, used to check for tri fold repetition.
     //after move is made by either bot or opponent store here.
     //in eval, call statically and see if the boards match two others, if so give bad score.
-    public static ArrayList<Move> moveHistory;
+    public static ArrayList<long[]> moveHistory =new ArrayList<>();
+
+
+    public static int moveCount =0;
 
 
 

@@ -19,7 +19,6 @@ public class Lichess {
 
     public static InputStream sendRequest(String method, String endpoint) throws IOException
     {
-        System.out.println(token);
         HttpsURLConnection con = (HttpsURLConnection) new URL(baseUrl + endpoint).openConnection();
         con.setRequestMethod(method);
         if(token != null)

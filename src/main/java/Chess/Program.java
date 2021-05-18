@@ -12,7 +12,7 @@ import com.google.gson.JsonObject;
 
 public class Program {
 
-    //double pawn push error.
+    //en passant on borders error.
 
     public static void main(String[] args) throws Exception {
 
@@ -31,8 +31,20 @@ public class Program {
 
 
 
+        /*parser.fenToBitboards("4k3/8/8/p7/7P/8/8/4K3 b - 23 0 1");
 
-       InputStream is =  Lichess.sendRequest("GET","/api/stream/event");
+        GameState.updatePiecesArray();
+
+
+        ArrayList<Move> moves = generateBlackMoves(GameState.statePieces,0000L,23);
+
+        for(Move m: moves){
+            System.out.println(m);
+        }
+
+         */
+
+       /*InputStream is =  Lichess.sendRequest("GET","/api/stream/event");
 
         final BufferedReader reader = new BufferedReader(
                 new InputStreamReader(is));
@@ -53,8 +65,6 @@ public class Program {
 
 
 
-
-
                 if(s.equals("\"challenge\"")){
 
 
@@ -68,18 +78,21 @@ public class Program {
                     Lichess.sendPOSTRequest("/api/challenge/" + id + "/accept","",null);
 
                     //start game
-                    playGame(challengerID,id);
+                    startGame(challengerID,id);
 
                 }
-
-
-
 
 
             }
 
         }
         reader.close();
+
+
+
+
+        */
+
 
 
 
@@ -93,10 +106,12 @@ public class Program {
 
     }
 
-    public static void playGame(String oppID, String challengeID) throws IOException {
+    public static void startGame(String oppID, String challengeID) throws IOException {
 
         FenParser parser = new FenParser();
         Gson gson = new Gson();
+
+
 
         InputStream is = Lichess.sendRequest("GET", "/api/bot/game/stream/" + challengeID);
 
@@ -113,9 +128,53 @@ public class Program {
 
         String fen = coderollsJsonObject.get("initialFen").toString().replaceAll("\"","");
 
+        /*JsonElement rematch = coderollsJsonObject.get("state").getAsJsonObject().get("rematch");//.toString().replaceAll("\"","");
 
 
-        GameState.resetBoards();
+        String rematchS;
+        if(rematch==null){
+            rematchS= "";
+        }
+        else{
+            rematchS = rematch.toString().replaceAll("\"","");
+
+        }
+
+        System.out.println(rematchS);
+
+
+        if(!(rematchS.equals(""))){
+
+
+            InputStream input = Lichess.sendRequest("GET", "/api/bot/game/stream/" + rematchS);
+
+            final BufferedReader rematchRead = new BufferedReader(
+                    new InputStreamReader(input));
+
+            playGame(fen,whiteId,rematchS,rematchRead);
+        }
+        else{
+            playGame(fen,whiteId,challengeID,reader);
+        }
+
+         */
+
+
+        playGame(fen,whiteId,challengeID,reader);
+
+        reader.close();
+
+    }
+
+
+    public static void playGame(String fen,String whiteId,String challengeId,BufferedReader reader) throws IOException {
+
+        FenParser parser = new FenParser();
+        Gson gson = new Gson();
+
+        GameState.resetInfo();
+
+
 
         if(fen.equals("startpos")){
             parser.fenToBitboards("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
@@ -177,6 +236,9 @@ public class Program {
                         long[] movePieces1 = GameState.generatePiecesArray();
 
                         System.out.println("Before: ");
+
+                        System.out.println(Long.toBinaryString(GameState.castleRights));
+
                         for(int i =0; i<12;i++){
                             System.out.println(i);
 
@@ -190,13 +252,19 @@ public class Program {
 
                         Lichess.recieveIncoming(moves[moves.length - 1].replaceAll("\"", ""));
 
+                        GameState.moveCount++;
+
 
                         GameState.updateIndivBoards();
 
                         long[] movePieces2 = GameState.generatePiecesArray();
 
+                        GameState.moveHistory.add(copyArray(movePieces2));
+
 
                         System.out.println("After: ");
+
+                        System.out.println(Long.toBinaryString(GameState.castleRights));
                         for(int i =0; i<12;i++){
                             System.out.println(i);
 
@@ -222,6 +290,8 @@ public class Program {
                 GameState.updatePiecesArray();
 
                 System.out.println("Before: ");
+
+                System.out.println(Long.toBinaryString(GameState.castleRights));
                 for(int i =0; i<12;i++){
                     System.out.println(i);
 
@@ -251,13 +321,15 @@ public class Program {
                 System.out.println(move);
 
                 System.out.println("After: ");
+
+                System.out.println(Long.toBinaryString(GameState.castleRights));
                 for(int i =0; i<12;i++){
                     System.out.println(i);
 
                     ChessBoard.printBitBoard(move.bitboardCopys[i]);
                 }
 
-                 
+
 
 
 
@@ -278,8 +350,13 @@ public class Program {
 
                 dic.put("offeringDraw", "false");
 
-                Lichess.sendPOSTRequest("/api/bot/game/" + challengeID + "/move/" + finalMove + "", "", dic);
+                Lichess.sendPOSTRequest("/api/bot/game/" + challengeId + "/move/" + finalMove + "", "", dic);
 
+                GameState.moveCount++;
+
+
+
+                GameState.moveHistory.add(copyArray(GameState.statePieces));
 
 
                 GameState.sideToMove *= -1;
@@ -292,8 +369,10 @@ public class Program {
 
 
         }
-
     }
+
+
+
     public static MovePair miniMax(long[] pieces,long castleRights,int enPassSquare, int depth, int side, boolean isMaxPlayer, int alpha, int beta) {
 
         if (depth == 0 || (ChessBoard.checkForCheckmate(pieces,castleRights,enPassSquare,side)== true)|| (ChessBoard.checkForStalemate(pieces,castleRights,enPassSquare,side)== true)) {
@@ -762,28 +841,55 @@ public class Program {
                     }
 
                     for(Integer possEnPass: indices){
-                        if((possEnPass == enPassSquare+ 7) |(possEnPass == enPassSquare+ 9) ){
-
-                            copy[0] &= ~(1L << possEnPass);
-                            copy[0] |= (1L << enPassSquare);
-
-                            copy[6] &= ~(1L << enPassSquare+8);
-
-                            long[] teamCopiesPass = generateTeamLongs(copy);
+                        if(possEnPass == enPassSquare+ 7) {
+                            if(!((1L<<possEnPass & Lookups.fileTables[4]<<7)!=0)) {
 
 
-                            int enPassTarget = enPassSquare;
-                            enPassTarget = 64;
+                                copy[0] &= ~(1L << possEnPass);
+                                copy[0] |= (1L << enPassSquare);
 
-                            if ((board.checkForCheck(copy[3], board.generateSideAttackMask(copy,-1,teamCopiesPass[0],teamCopiesPass[1],teamCopiesPass[2]))) == false) {
-                                legalMoves.add(new Move(possEnPass,enPassSquare,6,copyArray(copy),0,castleRights,enPassTarget));
+                                copy[6] &= ~(1L << enPassSquare + 8);
+
+                                long[] teamCopiesPass = generateTeamLongs(copy);
+
+
+                                int enPassTarget = enPassSquare;
+                                enPassTarget = 64;
+
+                                if ((board.checkForCheck(copy[3], board.generateSideAttackMask(copy, -1, teamCopiesPass[0], teamCopiesPass[1], teamCopiesPass[2]))) == false) {
+                                    legalMoves.add(new Move(possEnPass, enPassSquare, 6, copyArray(copy), 0, castleRights, enPassTarget));
+                                }
+
+                                copy[0] |= (1L << possEnPass);
+                                copy[0] &= ~(1L << enPassSquare);
+
+                                copy[6] |= (1L << enPassSquare + 8);
+
+
                             }
+                        }
+                        if(possEnPass == enPassSquare+ 9){
+                            if(!((1L<<possEnPass & Lookups.fileTables[4])!=0)){
+                                copy[0] &= ~(1L << possEnPass);
+                                copy[0] |= (1L << enPassSquare);
 
-                            copy[0] |= (1L << possEnPass);
-                            copy[0] &= ~(1L << enPassSquare);
+                                copy[6] &= ~(1L << enPassSquare + 8);
 
-                            copy[6] |= (1L << enPassSquare+8);
+                                long[] teamCopiesPass = generateTeamLongs(copy);
 
+
+                                int enPassTarget = enPassSquare;
+                                enPassTarget = 64;
+
+                                if ((board.checkForCheck(copy[3], board.generateSideAttackMask(copy, -1, teamCopiesPass[0], teamCopiesPass[1], teamCopiesPass[2]))) == false) {
+                                    legalMoves.add(new Move(possEnPass, enPassSquare, 6, copyArray(copy), 0, castleRights, enPassTarget));
+                                }
+
+                                copy[0] |= (1L << possEnPass);
+                                copy[0] &= ~(1L << enPassSquare);
+
+                                copy[6] |= (1L << enPassSquare + 8);
+                            }
                         }
                     }
 
@@ -1150,29 +1256,56 @@ public class Program {
                     }
 
                     for(Integer possEnPass: indices){
-                        if((possEnPass == enPassSquare- 7) |(possEnPass == enPassSquare- 9) ){
+                        if(possEnPass == enPassSquare- 7){
+                            if(!((1L<<possEnPass & Lookups.fileTables[4])!=0)) {
 
-                            copy[6] &= ~(1L << possEnPass);
-                            copy[6] |= (1L << enPassSquare);
+                                copy[6] &= ~(1L << possEnPass);
+                                copy[6] |= (1L << enPassSquare);
 
-                            copy[0] &= ~(1L << enPassSquare-8);
+                                copy[0] &= ~(1L << enPassSquare - 8);
 
-                            long[] teamCopiesPass = generateTeamLongs(copy);
+                                long[] teamCopiesPass = generateTeamLongs(copy);
 
 
+                                int enPassTarget = enPassSquare;
+                                enPassTarget = 64;
 
-                            int enPassTarget = enPassSquare;
-                            enPassTarget = 64;
+                                if ((board.checkForCheck(copy[9], board.generateSideAttackMask(copy, -1, teamCopiesPass[0], teamCopiesPass[1], teamCopiesPass[2]))) == false) {
+                                    legalMoves.add(new Move(possEnPass, enPassSquare, 0, copyArray(copy), 6, castleRights, enPassTarget));
+                                }
 
-                            if ((board.checkForCheck(copy[9], board.generateSideAttackMask(copy,-1,teamCopiesPass[0],teamCopiesPass[1],teamCopiesPass[2]))) == false) {
-                                legalMoves.add(new Move(possEnPass,enPassSquare,0,copyArray(copy),6,castleRights,enPassTarget));
+                                copy[6] |= (1L << possEnPass);
+                                copy[6] &= ~(1L << enPassSquare);
+
+                                copy[0] |= (1L << enPassSquare - 8);
                             }
 
-                            copy[6] |= (1L << possEnPass);
-                            copy[6] &= ~(1L << enPassSquare);
+                        }
+                        if(possEnPass == enPassSquare- 9){
 
-                            copy[0] |= (1L << enPassSquare-8);
+                            if(!((1L<<possEnPass & Lookups.fileTables[4]<<7)!=0)){
 
+                                copy[6] &= ~(1L << possEnPass);
+                                copy[6] |= (1L << enPassSquare);
+
+                                copy[0] &= ~(1L << enPassSquare - 8);
+
+                                long[] teamCopiesPass = generateTeamLongs(copy);
+
+
+                                int enPassTarget = enPassSquare;
+                                enPassTarget = 64;
+
+                                if ((board.checkForCheck(copy[9], board.generateSideAttackMask(copy, -1, teamCopiesPass[0], teamCopiesPass[1], teamCopiesPass[2]))) == false) {
+                                    legalMoves.add(new Move(possEnPass, enPassSquare, 0, copyArray(copy), 6, castleRights, enPassTarget));
+                                }
+
+                                copy[6] |= (1L << possEnPass);
+                                copy[6] &= ~(1L << enPassSquare);
+
+                                copy[0] |= (1L << enPassSquare - 8);
+
+                            }
                         }
                     }
 

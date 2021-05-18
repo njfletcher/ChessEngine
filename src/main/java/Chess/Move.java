@@ -52,7 +52,7 @@ public class Move{
     }
 
     //castles
-    public Move(long[] copies,long castleCopy, int enPassantSquare, int to, int from){
+    public Move(long[] copies,long castleCopy, int enPassantSquare, int from, int to){
 
         bitboardCopys = copies;
         castle = true;
