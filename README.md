@@ -1,14 +1,14 @@
-# ChessEngine
+# goosefish
 
 Java Chess Engine
 ---------------------
 
-Goals:
-- take input from lichess(or any other chess site/gui)
-- create/update bitboards using lichess input
-- calculate legal moves for every piece on the board
-- evaluate all legal moves and pick best one(using MinMax and maybe Neural Network)
-- send move back to lichess.
+Uses 64bit longs to represent chessboard.
 
-Methods for get/post requests using the lichess api are taken from 
-- https://github.com/hell-sh/CompactLichess
+Minimax search function with Alpha-Beta pruning.
+
+Evaluation takes into account simple material advantage, king safety, mobility, and draws/stalemates.
+
+Methods for get/post requests using the lichess api are from  https://github.com/hell-sh/CompactLichess
+
+Magic bitboard implementation is from Chess Programming(https://www.youtube.com/channel/UCB9-prLkPwgvlKKqDgXhsMQ)

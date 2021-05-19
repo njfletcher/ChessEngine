@@ -44,7 +44,7 @@ public class Program {
 
          */
 
-       /*InputStream is =  Lichess.sendRequest("GET","/api/stream/event");
+       InputStream is =  Lichess.sendRequest("GET","/api/stream/event");
 
         final BufferedReader reader = new BufferedReader(
                 new InputStreamReader(is));
@@ -87,20 +87,6 @@ public class Program {
 
         }
         reader.close();
-
-
-
-
-        */
-
-
-
-
-
-
-
-
-
 
 
 
@@ -451,18 +437,8 @@ public class Program {
    public static void  sortMoves(ArrayList<Move> moves, int depth){
 
 
-        for(Move m : moves){
 
-            m.evalScore = ChessBoard.evaluatePos(m.bitboardCopys,m.castleRightsCopy,m.enPassSquare,depth);
-        }
-
-
-
-        moves.sort(new MoveSorter());
-
-
-
-   }
+    }
 
    public static ArrayList<Move> getCurrentPlayerMoves(long[] pieces,long sideMove,long castleRights,int enPassSquare){
 

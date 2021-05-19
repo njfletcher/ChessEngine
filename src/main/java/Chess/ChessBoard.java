@@ -651,6 +651,11 @@ public class ChessBoard {
         ArrayList<Integer> whitePindices = indexSetBits(bitboards[6]);
 
 
+        int blackKindices = indexSetBits(bitboards[3]).size();
+
+        int whiteKindices = indexSetBits(bitboards[9]).size();
+
+
 
 
         //pawns worth 1, knights/bishops worth 3, rook worth 5, queen worth 9, checkmate worth 10000
@@ -666,8 +671,14 @@ public class ChessBoard {
 
 
 
+
+
         long blackAttack = board.generateSideAttackMask(bitboards,1,teamLongs[0],teamLongs[1],teamLongs[2]);
         long whiteAttack = board.generateSideAttackMask(bitboards,-1,teamLongs[0],teamLongs[1],teamLongs[2]);
+
+        boolean blackCheck = board.checkForCheck(bitboards[3],whiteAttack);
+
+        boolean whiteCheck = board.checkForCheck(bitboards[9],blackAttack);
 
 
        /* System.out.println(indexSetBits(bitboards[10]).size()- indexSetBits(bitboards[4]).size());
@@ -685,7 +696,9 @@ public class ChessBoard {
 
 
 
-        int mobilityScore = (whiteMoveSize - blackMoveSize) / 15;
+        int mobilityScore = (whiteMoveSize - blackMoveSize) /20;
+
+        int kingSafety = (whiteKindices - blackKindices)/4;
 
         //check to see if knights are on a or h files, which is punished.
 
@@ -748,7 +761,7 @@ public class ChessBoard {
 
 
         //checkmates
-        if(blackMoveSize==0 & (board.checkForCheck(bitboards[3],whiteAttack)== true )){
+        if(blackMoveSize==0 & (blackCheck == true )){
 
             if(depth>0){
                 evaluationWhite =1000 * depth;
@@ -760,7 +773,7 @@ public class ChessBoard {
 
         }
 
-        if(whiteMoveSize==0 & (board.checkForCheck(bitboards[9],blackAttack)== true )){
+        if(whiteMoveSize==0 & (whiteCheck == true )){
             if(depth>0){
                 evaluationBlack =1000 * depth;
 
@@ -773,12 +786,12 @@ public class ChessBoard {
 
 
         //stalemates
-        if(blackMoveSize==0 & (board.checkForCheck(bitboards[3],whiteAttack)== false )){
+        if(blackMoveSize==0 & (blackCheck == false )){
 
             evaluationWhite = -500;
 
         }
-        if(whiteMoveSize==0 & (board.checkForCheck(bitboards[9],blackAttack)== false )){
+        if(whiteMoveSize==0 & (whiteCheck== false )){
 
                 evaluationBlack = -500;
 
@@ -788,7 +801,7 @@ public class ChessBoard {
 
 
 
-        return evaluationWhite -evaluationBlack + simpleMatScore + random;
+        return evaluationWhite -evaluationBlack + simpleMatScore + random + mobilityScore + kingSafety;
 
 
 
