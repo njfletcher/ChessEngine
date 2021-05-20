@@ -6,6 +6,7 @@ import java.io.*;
 import java.util.*;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
 //make copy of copy for inserting bitboards in move objects.
@@ -114,23 +115,15 @@ public class Program {
 
         String fen = coderollsJsonObject.get("initialFen").toString().replaceAll("\"","");
 
-        /*JsonElement rematch = coderollsJsonObject.get("state").getAsJsonObject().get("rematch");//.toString().replaceAll("\"","");
+        JsonElement rematch = coderollsJsonObject.get("state").getAsJsonObject().get("rematch");//.toString().replaceAll("\"","");
 
 
-        String rematchS;
+        String rematchS ="";
         if(rematch==null){
-            rematchS= "";
+            playGame(fen,whiteId,challengeID,reader);
         }
         else{
             rematchS = rematch.toString().replaceAll("\"","");
-
-        }
-
-        System.out.println(rematchS);
-
-
-        if(!(rematchS.equals(""))){
-
 
             InputStream input = Lichess.sendRequest("GET", "/api/bot/game/stream/" + rematchS);
 
@@ -139,14 +132,11 @@ public class Program {
 
             playGame(fen,whiteId,rematchS,rematchRead);
         }
-        else{
-            playGame(fen,whiteId,challengeID,reader);
-        }
 
-         */
+        System.out.println(rematchS);
 
 
-        playGame(fen,whiteId,challengeID,reader);
+
 
         reader.close();
 
@@ -627,6 +617,7 @@ public class Program {
                 //loops through each attack target square.
                 for (Integer bit : attackIndices) {
 
+                    long castleRightsCopy = castleRights;
                     long[] copy = new long[12];
                     for(int l = 0; l < 12; l++){
                         copy[l] = pieces[l];
@@ -655,10 +646,25 @@ public class Program {
 
 
 
+                    if(i==1){
+                        if(num == 63){
+                            castleRightsCopy &= ~(1L<<1);
+                        }
+                        if(num ==56){
+                            castleRightsCopy &= ~(1L);
+                        }
+                    }
+
+                    //nulls both castle rights of a side if king moves
+                    if(i==3){
+                        castleRightsCopy &= ~(1L);
+
+                        castleRightsCopy &= ~(1L<<1);
+                    }
 
                     enPassTarget = 64;
 
-                    long castleRightsCopy = castleRights;
+
 
                     //if the white rook is being attacked, white's castle rights.
                     if(index == 7 & bit == 7){
@@ -1077,6 +1083,23 @@ public class Program {
                     long[] teamCopies = generateTeamLongs(copy);
 
                     long castleRightsCopy = castleRights;
+
+                    if(i==7){
+                        if(num == 7){
+                            castleRightsCopy &= ~(1L<<3);
+                        }
+                        if(num ==0){
+                            castleRightsCopy &= ~(1L<<2);
+                        }
+                    }
+
+
+                    //nulls both castle rights of a side if king moves
+                    if(i==9){
+                        castleRights &= ~(1L<<3);
+
+                        castleRights &= ~(1L<<2);
+                    }
 
                     if(index == 1 & bit == 63){
                         castleRightsCopy &= ~(1L<<1);

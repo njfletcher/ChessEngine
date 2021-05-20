@@ -74,6 +74,8 @@ public class GameState {
 
         castleRights =0b0000L;
 
+
+
     }
 
 
