@@ -465,7 +465,7 @@ public class Program {
 
 
 
-        for (int i = 0; i < 6; i++) {
+        for (int i = 5; i >=0; i--) {
 
             ArrayList<Integer> indices = ChessBoard.indexSetBits(pieces[i]);
 
@@ -474,6 +474,156 @@ public class Program {
             //System.out.println(indices.toString());
 
             long[] moves = new long[2];
+
+            if(i==1){
+
+                long[] copy = new long[12];
+                for(int l = 0; l < 12; l++){
+                    copy[l] = pieces[l];
+                }
+
+                //castle black checks.
+                int enPassTarget = enPassSquare;
+                enPassTarget = 64;
+
+                long[] teamCopies = generateTeamLongs(copy);
+
+                //attack map check should be per side, not one thing.
+                if(!(((board.generateSideAttackMask(copy,-1,teamCopies[0],teamCopies[1],teamCopies[2]) & Lookups.castleTables[3]) != 0) | ((teamCopies[2] & Lookups.castleTables[3])) != 0 )
+                        & ((board.checkForCheck(copy[3],board.generateSideAttackMask(copy,-1,teamCopies[0],teamCopies[1],teamCopies[2])))==false)){
+                    //queenside black castle
+                    if ((castleRights & 0b1L) != 0) {
+
+                        copy[3] &= ~(1L << 60);
+                        copy[3] |= (1L << 58);
+
+                        copy[1] &= ~(1L << 56);
+                        copy[1] |= (1L << 59);
+
+
+                        long[] teamCopiesCastle = generateTeamLongs(copy);
+
+                        long castleRightsCopy = castleRights;
+
+
+
+                        castleRightsCopy &= ~(1L);
+
+                        castleRightsCopy &= ~(1L<<1);
+
+
+
+                        if ((board.checkForCheck(copy[3], board.generateSideAttackMask(copy, -1, teamCopiesCastle[0], teamCopiesCastle[1], teamCopiesCastle[2]))) == false) {
+                            legalMoves.add(new Move(copyArray(copy), castleRightsCopy,enPassTarget,60,58));
+                        }
+
+                        copy[3] &= ~(1L << 58);
+                        copy[3] |= (1L << 60);
+
+                        copy[1] &= ~(1L << 59);
+                        copy[1] |= (1L << 56);
+
+                    }
+                }
+                if(!(((board.generateSideAttackMask(copy,-1,teamCopies[0],teamCopies[1],teamCopies[2]) & Lookups.castleTables[2]) != 0) | ((teamCopies[2] & Lookups.castleTables[2])) != 0 )
+                        & ((board.checkForCheck(copy[3],board.generateSideAttackMask(copy,-1,teamCopies[0],teamCopies[1],teamCopies[2])))==false)){
+                    //kingside black castle
+                    if((castleRights & 0b10L) != 0){
+
+                        copy[3] &= ~(1L << 60);
+                        copy[3]|= (1L <<62);
+
+                        copy[1] &= ~(1L << 63);
+                        copy[1]|= (1L <<61);
+
+
+                        long[] teamCopiesCastle = generateTeamLongs(copy);
+
+                        long castleRightsCopy = castleRights;
+
+                        castleRightsCopy &= ~(1L<<1);
+                        castleRightsCopy &= ~(1L);
+
+
+
+                        if ((board.checkForCheck(copy[3], board.generateSideAttackMask(copy,-1,teamCopiesCastle[0],teamCopiesCastle[1],teamCopiesCastle[2]))) == false) {
+                            legalMoves.add(new Move(copyArray(copy),castleRightsCopy,enPassTarget,60,62));
+                        }
+
+                        copy[3] &= ~(1L <<62);
+                        copy[3]|= (1L << 60);
+
+                        copy[1] &= ~(1L << 61);
+                        copy[1]|= (1L <<63);
+                    }
+
+                }
+
+            }
+
+            //black  enPassant move check
+            if(i==0 &(enPassSquare != 64)){
+
+                long[] copy = new long[12];
+                for(int l = 0; l < 12; l++){
+                    copy[l] = pieces[l];
+                }
+
+                for(Integer possEnPass: indices){
+                    if(possEnPass == enPassSquare+ 7) {
+                        if(!((1L<<possEnPass & Lookups.fileTables[4]<<7)!=0)) {
+
+
+                            copy[0] &= ~(1L << possEnPass);
+                            copy[0] |= (1L << enPassSquare);
+
+                            copy[6] &= ~(1L << enPassSquare + 8);
+
+                            long[] teamCopiesPass = generateTeamLongs(copy);
+
+
+                            int enPassTarget = enPassSquare;
+                            enPassTarget = 64;
+
+                            if ((board.checkForCheck(copy[3], board.generateSideAttackMask(copy, -1, teamCopiesPass[0], teamCopiesPass[1], teamCopiesPass[2]))) == false) {
+                                legalMoves.add(new Move(possEnPass, enPassSquare, 6, copyArray(copy), 0, castleRights, enPassTarget));
+                            }
+
+                            copy[0] |= (1L << possEnPass);
+                            copy[0] &= ~(1L << enPassSquare);
+
+                            copy[6] |= (1L << enPassSquare + 8);
+
+
+                        }
+                    }
+                    if(possEnPass == enPassSquare+ 9){
+                        if(!((1L<<possEnPass & Lookups.fileTables[4])!=0)){
+                            copy[0] &= ~(1L << possEnPass);
+                            copy[0] |= (1L << enPassSquare);
+
+                            copy[6] &= ~(1L << enPassSquare + 8);
+
+                            long[] teamCopiesPass = generateTeamLongs(copy);
+
+
+                            int enPassTarget = enPassSquare;
+                            enPassTarget = 64;
+
+                            if ((board.checkForCheck(copy[3], board.generateSideAttackMask(copy, -1, teamCopiesPass[0], teamCopiesPass[1], teamCopiesPass[2]))) == false) {
+                                legalMoves.add(new Move(possEnPass, enPassSquare, 6, copyArray(copy), 0, castleRights, enPassTarget));
+                            }
+
+                            copy[0] |= (1L << possEnPass);
+                            copy[0] &= ~(1L << enPassSquare);
+
+                            copy[6] |= (1L << enPassSquare + 8);
+                        }
+                    }
+                }
+
+
+            }
 
 
             //num = each position on board for ith piece type
@@ -513,106 +663,6 @@ public class Program {
 
 
                 ArrayList<Integer> attackIndices = ChessBoard.indexSetBits(moves[1]);
-
-
-                //loops through each standard move square
-                for (Integer bit : moveIndices) {
-
-                    long[] copy = new long[12];
-                    for(int l = 0; l < 12; l++){
-                        copy[l] = pieces[l];
-                    }
-
-                    //make move
-                    copy[i] &= ~(1L << num);
-                    copy[i]|= (1L << bit);
-
-                    long[] teamCopies = generateTeamLongs(copy);
-
-
-                    int enPassTarget = enPassSquare;
-
-                    long castleRightsCopy = castleRights;
-
-
-
-                    //Change castle rights if the rook is being moved, depending on what rook is being moved.
-                    if(i==1){
-                        if(num == 63){
-                            castleRightsCopy &= ~(1L<<1);
-                        }
-                        if(num ==56){
-                            castleRightsCopy &= ~(1L);
-                        }
-                    }
-
-                    //nulls both castle rights of a side if king moves
-                    if(i==3){
-                        castleRightsCopy &= ~(1L);
-
-                        castleRightsCopy &= ~(1L<<1);
-                    }
-
-
-                    if(i ==0 & (bit == num-16)){
-
-                        enPassTarget = num -8;
-
-                    }
-                    else{
-                        enPassTarget = 64;
-                    }
-
-                    //promotion check
-                    if(i==0 & bit<8){
-
-                        copy[i] &= ~(1L << bit);
-
-                        //1,2,4,5
-                        for(int promotionPieceType: new int[] {1,2,4,5}){
-
-                            copy[promotionPieceType] |= (1L << bit);
-
-                            long[] copyPromotion = new long[12];
-
-                            enPassTarget = 64;
-
-                            long[] teamCopiesPromotion = generateTeamLongs(copy);
-                            for(int l = 0; l < 12; l++){
-                                copyPromotion[l] = copy[l];
-                            }
-
-                            if ((board.checkForCheck(copy[3], board.generateSideAttackMask(copy,-1, teamCopiesPromotion[0], teamCopiesPromotion[1], teamCopiesPromotion[2]))) ==false) {
-                                legalMoves.add(new Move(num, bit,promotionPieceType, copyPromotion,castleRightsCopy,enPassTarget,i));
-
-                            }
-
-                            copy[promotionPieceType] &= ~(1L << bit);
-
-                        }
-
-
-
-
-                        copy[i] |= (1L << num);
-
-                        break;
-                    }
-
-
-
-                    //check for check after making hypothetical move
-                    if ((board.checkForCheck(copy[3], board.generateSideAttackMask(copy,-1, teamCopies[0], teamCopies[1], teamCopies[2]))) ==false) {
-                        legalMoves.add(new Move(num, bit, copyArray(copy),i,castleRightsCopy,enPassTarget));
-
-                    }
-
-                    
-                    //undo move
-                    copy[i] &= ~(1L << bit);
-                    copy[i] |= (1L << num);
-
-                }
 
                 //loops through each attack target square.
                 for (Integer bit : attackIndices) {
@@ -728,155 +778,108 @@ public class Program {
 
                 }
 
-                if(i==1){
+
+                //loops through each standard move square
+                for (Integer bit : moveIndices) {
 
                     long[] copy = new long[12];
                     for(int l = 0; l < 12; l++){
                         copy[l] = pieces[l];
                     }
 
-                    //castle black checks.
-                    int enPassTarget = enPassSquare;
-                    enPassTarget = 64;
+                    //make move
+                    copy[i] &= ~(1L << num);
+                    copy[i]|= (1L << bit);
 
                     long[] teamCopies = generateTeamLongs(copy);
 
-                    //attack map check should be per side, not one thing.
-                    if(!(((board.generateSideAttackMask(copy,-1,teamCopies[0],teamCopies[1],teamCopies[2]) & Lookups.castleTables[3]) != 0) | ((teamCopies[2] & Lookups.castleTables[3])) != 0 )
-                            & ((board.checkForCheck(copy[3],board.generateSideAttackMask(copy,-1,teamCopies[0],teamCopies[1],teamCopies[2])))==false)){
-                        //queenside black castle
-                        if ((castleRights & 0b1L) != 0) {
 
-                            copy[3] &= ~(1L << 60);
-                            copy[3] |= (1L << 58);
+                    int enPassTarget = enPassSquare;
 
-                            copy[1] &= ~(1L << 56);
-                            copy[1] |= (1L << 59);
-
-
-                            long[] teamCopiesCastle = generateTeamLongs(copy);
-
-                            long castleRightsCopy = castleRights;
+                    long castleRightsCopy = castleRights;
 
 
 
-                            castleRightsCopy &= ~(1L);
-
+                    //Change castle rights if the rook is being moved, depending on what rook is being moved.
+                    if(i==1){
+                        if(num == 63){
                             castleRightsCopy &= ~(1L<<1);
-
-
-
-                            if ((board.checkForCheck(copy[3], board.generateSideAttackMask(copy, -1, teamCopiesCastle[0], teamCopiesCastle[1], teamCopiesCastle[2]))) == false) {
-                                legalMoves.add(new Move(copyArray(copy), castleRightsCopy,enPassTarget,60,58));
-                            }
-
-                            copy[3] &= ~(1L << 58);
-                            copy[3] |= (1L << 60);
-
-                            copy[1] &= ~(1L << 59);
-                            copy[1] |= (1L << 56);
-
+                        }
+                        if(num ==56){
+                            castleRightsCopy &= ~(1L);
                         }
                     }
-                    if(!(((board.generateSideAttackMask(copy,-1,teamCopies[0],teamCopies[1],teamCopies[2]) & Lookups.castleTables[2]) != 0) | ((teamCopies[2] & Lookups.castleTables[2])) != 0 )
-                            & ((board.checkForCheck(copy[3],board.generateSideAttackMask(copy,-1,teamCopies[0],teamCopies[1],teamCopies[2])))==false)){
-                        //kingside black castle
-                        if((castleRights & 0b10L) != 0){
 
-                            copy[3] &= ~(1L << 60);
-                            copy[3]|= (1L <<62);
+                    //nulls both castle rights of a side if king moves
+                    if(i==3){
+                        castleRightsCopy &= ~(1L);
 
-                            copy[1] &= ~(1L << 63);
-                            copy[1]|= (1L <<61);
+                        castleRightsCopy &= ~(1L<<1);
+                    }
 
 
-                            long[] teamCopiesCastle = generateTeamLongs(copy);
+                    if(i ==0 & (bit == num-16)){
 
-                            long castleRightsCopy = castleRights;
-
-                            castleRightsCopy &= ~(1L<<1);
-                            castleRightsCopy &= ~(1L);
-
-
-
-                            if ((board.checkForCheck(copy[3], board.generateSideAttackMask(copy,-1,teamCopiesCastle[0],teamCopiesCastle[1],teamCopiesCastle[2]))) == false) {
-                                legalMoves.add(new Move(copyArray(copy),castleRightsCopy,enPassTarget,60,62));
-                            }
-
-                            copy[3] &= ~(1L <<62);
-                            copy[3]|= (1L << 60);
-
-                            copy[1] &= ~(1L << 61);
-                            copy[1]|= (1L <<63);
-                        }
+                        enPassTarget = num -8;
 
                     }
+                    else{
+                        enPassTarget = 64;
+                    }
+
+                    //promotion check
+                    if(i==0 & bit<8){
+
+                        copy[i] &= ~(1L << bit);
+
+                        //1,2,4,5
+                        for(int promotionPieceType: new int[] {1,2,4,5}){
+
+                            copy[promotionPieceType] |= (1L << bit);
+
+                            long[] copyPromotion = new long[12];
+
+                            enPassTarget = 64;
+
+                            long[] teamCopiesPromotion = generateTeamLongs(copy);
+                            for(int l = 0; l < 12; l++){
+                                copyPromotion[l] = copy[l];
+                            }
+
+                            if ((board.checkForCheck(copy[3], board.generateSideAttackMask(copy,-1, teamCopiesPromotion[0], teamCopiesPromotion[1], teamCopiesPromotion[2]))) ==false) {
+                                legalMoves.add(new Move(num, bit,promotionPieceType, copyPromotion,castleRightsCopy,enPassTarget,i));
+
+                            }
+
+                            copy[promotionPieceType] &= ~(1L << bit);
+
+                        }
+
+
+
+
+                        copy[i] |= (1L << num);
+
+                        break;
+                    }
+
+
+
+                    //check for check after making hypothetical move
+                    if ((board.checkForCheck(copy[3], board.generateSideAttackMask(copy,-1, teamCopies[0], teamCopies[1], teamCopies[2]))) ==false) {
+                        legalMoves.add(new Move(num, bit, copyArray(copy),i,castleRightsCopy,enPassTarget));
+
+                    }
+
+                    
+                    //undo move
+                    copy[i] &= ~(1L << bit);
+                    copy[i] |= (1L << num);
 
                 }
 
-                //black  enPassant move check
-                if(i==0 &(enPassSquare != 64)){
-
-                    long[] copy = new long[12];
-                    for(int l = 0; l < 12; l++){
-                        copy[l] = pieces[l];
-                    }
-
-                    for(Integer possEnPass: indices){
-                        if(possEnPass == enPassSquare+ 7) {
-                            if(!((1L<<possEnPass & Lookups.fileTables[4]<<7)!=0)) {
 
 
-                                copy[0] &= ~(1L << possEnPass);
-                                copy[0] |= (1L << enPassSquare);
-
-                                copy[6] &= ~(1L << enPassSquare + 8);
-
-                                long[] teamCopiesPass = generateTeamLongs(copy);
-
-
-                                int enPassTarget = enPassSquare;
-                                enPassTarget = 64;
-
-                                if ((board.checkForCheck(copy[3], board.generateSideAttackMask(copy, -1, teamCopiesPass[0], teamCopiesPass[1], teamCopiesPass[2]))) == false) {
-                                    legalMoves.add(new Move(possEnPass, enPassSquare, 6, copyArray(copy), 0, castleRights, enPassTarget));
-                                }
-
-                                copy[0] |= (1L << possEnPass);
-                                copy[0] &= ~(1L << enPassSquare);
-
-                                copy[6] |= (1L << enPassSquare + 8);
-
-
-                            }
-                        }
-                        if(possEnPass == enPassSquare+ 9){
-                            if(!((1L<<possEnPass & Lookups.fileTables[4])!=0)){
-                                copy[0] &= ~(1L << possEnPass);
-                                copy[0] |= (1L << enPassSquare);
-
-                                copy[6] &= ~(1L << enPassSquare + 8);
-
-                                long[] teamCopiesPass = generateTeamLongs(copy);
-
-
-                                int enPassTarget = enPassSquare;
-                                enPassTarget = 64;
-
-                                if ((board.checkForCheck(copy[3], board.generateSideAttackMask(copy, -1, teamCopiesPass[0], teamCopiesPass[1], teamCopiesPass[2]))) == false) {
-                                    legalMoves.add(new Move(possEnPass, enPassSquare, 6, copyArray(copy), 0, castleRights, enPassTarget));
-                                }
-
-                                copy[0] |= (1L << possEnPass);
-                                copy[0] &= ~(1L << enPassSquare);
-
-                                copy[6] |= (1L << enPassSquare + 8);
-                            }
-                        }
-                    }
-
-
-                }
             }
         }
         return legalMoves;
@@ -904,7 +907,7 @@ public class Program {
 
 
 
-        for (int i = 6; i < 12; i++) {
+        for (int i = 11; i >=6; i--) {
 
 
 
@@ -912,406 +915,393 @@ public class Program {
 
             long[] moves = new long[2];
 
+            if(i==7){
 
-            for (Integer num : indices) {
 
-                if(i ==6) {
-                    moves = board.calculateWhitePawnMoves(num, wPieces, bPieces, allPieces);
+                long[] copy = new long[12];
 
+
+                for(int l = 0; l < 12; l++){
+                    copy[l] = pieces[l];
                 }
 
-                if(i ==7) {
-                    moves = board.calculateRookMoves(num, wPieces, bPieces, allPieces);
+                //castle white checks.
 
-                }
-                if(i ==8) {
-                    moves = board.calculateKnightMoves(num, wPieces, bPieces, allPieces);
+                int enPassTarget = enPassSquare;
+                enPassTarget = 64;
+                long[] teamCopies = generateTeamLongs(copy);
 
-                }
-                if(i ==9) {
-                    moves = board.calculateKingMoves(num, wPieces, bPieces, allPieces);
-                }
+                //attack map check should be per side, not one thing.
+                if(!(((board.generateSideAttackMask(copy,1,teamCopies[0],teamCopies[1],teamCopies[2]) & Lookups.castleTables[0]) != 0) | ((teamCopies[2] & Lookups.castleTables[0])) != 0 )
+                        & (board.checkForCheck(copy[9],board.generateSideAttackMask(copy,1,teamCopies[0],teamCopies[1],teamCopies[2]))==false)) {
+                    //queenside white castle
+                    if ((castleRights & 0b100L) != 0) {
 
-                if(i ==10) {
-                    moves = board.calculateQueenMoves(num, wPieces, bPieces, allPieces);
-                }
+                        copy[9] &= ~(1L << 4);
+                        copy[9] |= (1L << 2);
 
-                if(i ==11) {
-
-                    moves = board.calculateBishopMoves(num, wPieces, bPieces, allPieces);
-                }
+                        copy[7] &= ~(1L);
+                        copy[7] |= (1L << 3);
 
 
+                        long[] teamCopiesCastle = generateTeamLongs(copy);
 
+                        long castleRightsCopy = castleRights;
 
-
-                ArrayList<Integer> moveIndices = ChessBoard.indexSetBits(moves[0]);
-                ArrayList<Integer> attackIndices = ChessBoard.indexSetBits(moves[1]);
+                        castleRightsCopy &= ~(1L<<2);
+                        castleRightsCopy &= ~(1L<<3);
 
 
 
-
-
-                //loop through each standard move target square.
-                for (Integer bit : moveIndices) {
-
-
-
-                    long[] copy = new long[12];
-
-
-                    for(int l = 0; l < 12; l++){
-                        copy[l] = pieces[l];
-                    }
-                    //make move
-                    copy[i] &= ~(1L << num);
-                    copy[i]|= (1L << bit);
-
-
-
-
-                    long[] teamCopies = generateTeamLongs(copy);
-                    int enPassTarget = enPassSquare;
-
-                    long castleRightsCopy = castleRights;
-
-
-
-
-                    //Change castle rights if the rook is being moved
-                    if(i==7){
-                        if(num == 7){
-                            castleRightsCopy &= ~(1L<<3);
+                        if ((board.checkForCheck(copy[9], board.generateSideAttackMask(copy, 1, teamCopiesCastle[0], teamCopiesCastle[1], teamCopiesCastle[2]))) == false) {
+                            legalMoves.add(new Move(copyArray(copy), castleRightsCopy,enPassTarget,4,2));
                         }
-                        if(num ==0){
-                            castleRightsCopy &= ~(1L<<2);
+
+                        copy[9] &= ~(1L << 2);
+                        copy[9] |= (1L << 4);
+
+                        copy[7] &= ~(1L << 3);
+                        copy[7] |= (1L);
+
+                    }
+                }
+                if(!(((board.generateSideAttackMask(copy,1,teamCopies[0],teamCopies[1],teamCopies[2]) & Lookups.castleTables[1]) != 0) | ((teamCopies[2] & Lookups.castleTables[1])) != 0 )
+                        & (board.checkForCheck(copy[9],board.generateSideAttackMask(copy,1,teamCopies[0],teamCopies[1],teamCopies[2]))==false)) {
+                    //kingside white castle
+                    if ((castleRights & 0b1000L) != 0) {
+
+                        copy[9] &= ~(1L << 4);
+                        copy[9] |= (1L << 6);
+
+                        copy[7] &= ~(1L << 7);
+                        copy[7] |= (1L << 5);
+
+
+                        long[] teamCopiesCastle = generateTeamLongs(copy);
+
+                        long castleRightsCopy = castleRights;
+
+                        castleRightsCopy &= ~(1L<<3);
+                        castleRightsCopy &= ~(1L<<2);
+
+
+
+                        if ((board.checkForCheck(copy[9], board.generateSideAttackMask(copy, 1, teamCopiesCastle[0], teamCopiesCastle[1], teamCopiesCastle[2]))) == false) {
+                            legalMoves.add(new Move(copyArray(copy), castleRightsCopy,enPassTarget,4,6));
                         }
+
+                        copy[9] &= ~(1L << 6);
+                        copy[9] |= (1L << 4);
+
+                        copy[7] &= ~(1L << 5);
+                        copy[7] |= (1L << 7);
                     }
 
 
-                    //nulls both castle rights of a side if king moves
-                    if(i==9){
-                        castleRights &= ~(1L<<3);
+                }
 
-                        castleRights &= ~(1L<<2);
-                    }
 
-                    if(i ==6 & (bit == num+16)){
+            }
 
-                        enPassTarget = num +8;
+            //black  enPassant move check
+            if(i==6 &(enPassSquare != 64)) {
 
-                    }
-                    else{
-                        enPassTarget = 64;
-                    }
+                long[] copy = new long[12];
 
-                    //promotion check
-                    if(i==6 & bit>56){
 
-                        copy[i] &= ~(1L << bit);
+                for (int l = 0; l < 12; l++) {
+                    copy[l] = pieces[l];
+                }
 
-                        for(int promotionPieceType: new int[] {7,8,10,11}){
+                for (Integer possEnPass : indices) {
+                    if (possEnPass == enPassSquare - 7) {
+                        if (!((1L << possEnPass & Lookups.fileTables[4]) != 0)) {
 
-                            copy[promotionPieceType] |= (1L << bit);
+                            copy[6] &= ~(1L << possEnPass);
+                            copy[6] |= (1L << enPassSquare);
 
-                            long[] copyPromotion = new long[12];
+                            copy[0] &= ~(1L << enPassSquare - 8);
 
+                            long[] teamCopiesPass = generateTeamLongs(copy);
+
+
+                            int enPassTarget = enPassSquare;
                             enPassTarget = 64;
 
-                            long[] teamCopiesPromotion = generateTeamLongs(copy);
-                            for(int l = 0; l < 12; l++){
-                                copyPromotion[l] = copy[l];
+                            if ((board.checkForCheck(copy[9], board.generateSideAttackMask(copy, -1, teamCopiesPass[0], teamCopiesPass[1], teamCopiesPass[2]))) == false) {
+                                legalMoves.add(new Move(possEnPass, enPassSquare, 0, copyArray(copy), 6, castleRights, enPassTarget));
                             }
 
-                            if ((board.checkForCheck(copy[9], board.generateSideAttackMask(copy,1, teamCopiesPromotion[0], teamCopiesPromotion[1], teamCopiesPromotion[2]))) ==false) {
-                                legalMoves.add(new Move(num, bit,promotionPieceType, copyPromotion,castleRightsCopy,enPassTarget,i));
+                            copy[6] |= (1L << possEnPass);
+                            copy[6] &= ~(1L << enPassSquare);
 
+                            copy[0] |= (1L << enPassSquare - 8);
+                        }
+
+                    }
+                    if (possEnPass == enPassSquare - 9) {
+
+                        if (!((1L << possEnPass & Lookups.fileTables[4] << 7) != 0)) {
+
+                            copy[6] &= ~(1L << possEnPass);
+                            copy[6] |= (1L << enPassSquare);
+
+                            copy[0] &= ~(1L << enPassSquare - 8);
+
+                            long[] teamCopiesPass = generateTeamLongs(copy);
+
+
+                            int enPassTarget = enPassSquare;
+                            enPassTarget = 64;
+
+                            if ((board.checkForCheck(copy[9], board.generateSideAttackMask(copy, -1, teamCopiesPass[0], teamCopiesPass[1], teamCopiesPass[2]))) == false) {
+                                legalMoves.add(new Move(possEnPass, enPassSquare, 0, copyArray(copy), 6, castleRights, enPassTarget));
                             }
 
-                            copy[promotionPieceType] &= ~(1L << bit);
+                            copy[6] |= (1L << possEnPass);
+                            copy[6] &= ~(1L << enPassSquare);
 
-                        }
-
-
-                        copy[i] |= (1L << num);
-
-                        break;
-                    }
-
-
-                    //check for check after making hypothetical move
-                    if (!(board.checkForCheck(copy[9], board.generateSideAttackMask(copy,1,teamCopies[0],teamCopies[1],teamCopies[2])))) {
-                        legalMoves.add(new Move(num, bit, copyArray(copy),i,castleRightsCopy,enPassTarget));
-                    }
-
-                    //undo move
-                    copy[i] &= ~(1L << bit);
-                    copy[i] |= (1L << num);
-
-
-                }
-
-                //loops through each attack target square
-                for (Integer bit : attackIndices) {
-
-
-                    long[] copy = new long[12];
-
-
-                    for(int l = 0; l < 12; l++){
-                        copy[l] = pieces[l];
-                    }
-                    copy[i] &= ~(1L << num);
-
-
-
-                    int enPassTarget = enPassSquare;
-                    enPassTarget = 64;
-
-
-                    int index = 0;
-                    for (int j = 0; j < 6; j++) {
-                        if ((copy[j] & (1L << bit)) != 0) {
-                            copy[j] &= ~(1L << bit);
-                            index = j;
+                            copy[0] |= (1L << enPassSquare - 8);
 
                         }
                     }
-
-                    copy[i] |= (1L << bit);
-
-                    long[] teamCopies = generateTeamLongs(copy);
-
-                    long castleRightsCopy = castleRights;
-
-                    if(i==7){
-                        if(num == 7){
-                            castleRightsCopy &= ~(1L<<3);
-                        }
-                        if(num ==0){
-                            castleRightsCopy &= ~(1L<<2);
-                        }
-                    }
-
-
-                    //nulls both castle rights of a side if king moves
-                    if(i==9){
-                        castleRights &= ~(1L<<3);
-
-                        castleRights &= ~(1L<<2);
-                    }
-
-                    if(index == 1 & bit == 63){
-                        castleRightsCopy &= ~(1L<<1);
-                    }
-                    if(index == 1 & bit == 56){
-                        castleRightsCopy &= ~(1L);
-                    }
-
-
-
-                    //promotion + attack check
-                    if(i==6 & bit>56){
-
-                        copy[i] &= ~(1L << bit);
-
-
-                        for(int promotionPieceType: new int[] {7,8,10,11}){
-
-                            copy[promotionPieceType] |= (1L << bit);
-
-                            long[] copyPromotion = new long[12];
-
-                            long[] teamCopiesPromotion = generateTeamLongs(copy);
-                            for(int l = 0; l < 12; l++){
-                                copyPromotion[l] = copy[l];
-                            }
-
-                            if ((board.checkForCheck(copy[9], board.generateSideAttackMask(copy,1, teamCopiesPromotion[0], teamCopiesPromotion[1], teamCopiesPromotion[2]))) ==false) {
-                                legalMoves.add(new Move(num, bit,index,promotionPieceType, copyPromotion,castleRightsCopy,enPassTarget,i));
-
-                            }
-
-                            copy[promotionPieceType] &= ~(1L << bit);
-
-                        }
-
-
-
-
-                        copy[i] |= (1L << num);
-                        copy[index] |= (1L << bit);
-
-                        break;
-                    }
-
-
-                    if (!(board.checkForCheck(copy[9], board.generateSideAttackMask(copy,1,teamCopies[0],teamCopies[1],teamCopies[2])))) {
-                        legalMoves.add(new Move(num, bit, copyArray(copy),i,index,castleRightsCopy,enPassTarget));
-                    }
-                    copy[i] &= ~(1L << bit);
-                    copy[i]|= (1L << num);
-
-                    copy[index] |= (1L << bit);
-
-
-                }
-                if(i==7){
-
-
-                    long[] copy = new long[12];
-
-
-                    for(int l = 0; l < 12; l++){
-                        copy[l] = pieces[l];
-                    }
-
-                    //castle white checks.
-
-                    int enPassTarget = enPassSquare;
-                    enPassTarget = 64;
-                    long[] teamCopies = generateTeamLongs(copy);
-
-                    //attack map check should be per side, not one thing.
-                    if(!(((board.generateSideAttackMask(copy,1,teamCopies[0],teamCopies[1],teamCopies[2]) & Lookups.castleTables[0]) != 0) | ((teamCopies[2] & Lookups.castleTables[0])) != 0 )
-                    & (board.checkForCheck(copy[9],board.generateSideAttackMask(copy,1,teamCopies[0],teamCopies[1],teamCopies[2]))==false)) {
-                        //queenside white castle
-                        if ((castleRights & 0b100L) != 0) {
-
-                            copy[9] &= ~(1L << 4);
-                            copy[9] |= (1L << 2);
-
-                            copy[7] &= ~(1L);
-                            copy[7] |= (1L << 3);
-
-
-                            long[] teamCopiesCastle = generateTeamLongs(copy);
-
-                            long castleRightsCopy = castleRights;
-
-                            castleRightsCopy &= ~(1L<<2);
-                            castleRightsCopy &= ~(1L<<3);
-
-
-
-                            if ((board.checkForCheck(copy[9], board.generateSideAttackMask(copy, 1, teamCopiesCastle[0], teamCopiesCastle[1], teamCopiesCastle[2]))) == false) {
-                                legalMoves.add(new Move(copyArray(copy), castleRightsCopy,enPassTarget,4,2));
-                            }
-
-                            copy[9] &= ~(1L << 2);
-                            copy[9] |= (1L << 4);
-
-                            copy[7] &= ~(1L << 3);
-                            copy[7] |= (1L);
-
-                        }
-                    }
-                    if(!(((board.generateSideAttackMask(copy,1,teamCopies[0],teamCopies[1],teamCopies[2]) & Lookups.castleTables[1]) != 0) | ((teamCopies[2] & Lookups.castleTables[1])) != 0 )
-                            & (board.checkForCheck(copy[9],board.generateSideAttackMask(copy,1,teamCopies[0],teamCopies[1],teamCopies[2]))==false)) {
-                        //kingside white castle
-                        if ((castleRights & 0b1000L) != 0) {
-
-                            copy[9] &= ~(1L << 4);
-                            copy[9] |= (1L << 6);
-
-                            copy[7] &= ~(1L << 7);
-                            copy[7] |= (1L << 5);
-
-
-                            long[] teamCopiesCastle = generateTeamLongs(copy);
-
-                            long castleRightsCopy = castleRights;
-
-                            castleRightsCopy &= ~(1L<<3);
-                            castleRightsCopy &= ~(1L<<2);
-
-
-
-                            if ((board.checkForCheck(copy[9], board.generateSideAttackMask(copy, 1, teamCopiesCastle[0], teamCopiesCastle[1], teamCopiesCastle[2]))) == false) {
-                                legalMoves.add(new Move(copyArray(copy), castleRightsCopy,enPassTarget,4,6));
-                            }
-
-                            copy[9] &= ~(1L << 6);
-                            copy[9] |= (1L << 4);
-
-                            copy[7] &= ~(1L << 5);
-                            copy[7] |= (1L << 7);
-                        }
-
-
-                    }
-
-
-                }
-
-                //black  enPassant move check
-                if(i==6 &(enPassSquare != 64)){
-
-                    long[] copy = new long[12];
-
-
-                    for(int l = 0; l < 12; l++){
-                        copy[l] = pieces[l];
-                    }
-
-                    for(Integer possEnPass: indices){
-                        if(possEnPass == enPassSquare- 7){
-                            if(!((1L<<possEnPass & Lookups.fileTables[4])!=0)) {
-
-                                copy[6] &= ~(1L << possEnPass);
-                                copy[6] |= (1L << enPassSquare);
-
-                                copy[0] &= ~(1L << enPassSquare - 8);
-
-                                long[] teamCopiesPass = generateTeamLongs(copy);
-
-
-                                int enPassTarget = enPassSquare;
-                                enPassTarget = 64;
-
-                                if ((board.checkForCheck(copy[9], board.generateSideAttackMask(copy, -1, teamCopiesPass[0], teamCopiesPass[1], teamCopiesPass[2]))) == false) {
-                                    legalMoves.add(new Move(possEnPass, enPassSquare, 0, copyArray(copy), 6, castleRights, enPassTarget));
-                                }
-
-                                copy[6] |= (1L << possEnPass);
-                                copy[6] &= ~(1L << enPassSquare);
-
-                                copy[0] |= (1L << enPassSquare - 8);
-                            }
-
-                        }
-                        if(possEnPass == enPassSquare- 9){
-
-                            if(!((1L<<possEnPass & Lookups.fileTables[4]<<7)!=0)){
-
-                                copy[6] &= ~(1L << possEnPass);
-                                copy[6] |= (1L << enPassSquare);
-
-                                copy[0] &= ~(1L << enPassSquare - 8);
-
-                                long[] teamCopiesPass = generateTeamLongs(copy);
-
-
-                                int enPassTarget = enPassSquare;
-                                enPassTarget = 64;
-
-                                if ((board.checkForCheck(copy[9], board.generateSideAttackMask(copy, -1, teamCopiesPass[0], teamCopiesPass[1], teamCopiesPass[2]))) == false) {
-                                    legalMoves.add(new Move(possEnPass, enPassSquare, 0, copyArray(copy), 6, castleRights, enPassTarget));
-                                }
-
-                                copy[6] |= (1L << possEnPass);
-                                copy[6] &= ~(1L << enPassSquare);
-
-                                copy[0] |= (1L << enPassSquare - 8);
-
-                            }
-                        }
-                    }
-
-
                 }
             }
+
+
+                for (Integer num : indices) {
+
+                    if (i == 6) {
+                        moves = board.calculateWhitePawnMoves(num, wPieces, bPieces, allPieces);
+
+                    }
+
+                    if (i == 7) {
+                        moves = board.calculateRookMoves(num, wPieces, bPieces, allPieces);
+
+                    }
+                    if (i == 8) {
+                        moves = board.calculateKnightMoves(num, wPieces, bPieces, allPieces);
+
+                    }
+                    if (i == 9) {
+                        moves = board.calculateKingMoves(num, wPieces, bPieces, allPieces);
+                    }
+
+                    if (i == 10) {
+                        moves = board.calculateQueenMoves(num, wPieces, bPieces, allPieces);
+                    }
+
+                    if (i == 11) {
+
+                        moves = board.calculateBishopMoves(num, wPieces, bPieces, allPieces);
+                    }
+
+
+                    ArrayList<Integer> moveIndices = ChessBoard.indexSetBits(moves[0]);
+                    ArrayList<Integer> attackIndices = ChessBoard.indexSetBits(moves[1]);
+
+
+
+                    //loops through each attack target square
+                    for (Integer bit : attackIndices) {
+
+
+                        long[] copy = new long[12];
+
+
+                        for (int l = 0; l < 12; l++) {
+                            copy[l] = pieces[l];
+                        }
+                        copy[i] &= ~(1L << num);
+
+
+                        int enPassTarget = enPassSquare;
+                        enPassTarget = 64;
+
+
+                        int index = 0;
+                        for (int j = 0; j < 6; j++) {
+                            if ((copy[j] & (1L << bit)) != 0) {
+                                copy[j] &= ~(1L << bit);
+                                index = j;
+
+                            }
+                        }
+
+                        copy[i] |= (1L << bit);
+
+                        long[] teamCopies = generateTeamLongs(copy);
+
+                        long castleRightsCopy = castleRights;
+
+                        if (i == 7) {
+                            if (num == 7) {
+                                castleRightsCopy &= ~(1L << 3);
+                            }
+                            if (num == 0) {
+                                castleRightsCopy &= ~(1L << 2);
+                            }
+                        }
+
+
+                        //nulls both castle rights of a side if king moves
+                        if (i == 9) {
+                            castleRights &= ~(1L << 3);
+
+                            castleRights &= ~(1L << 2);
+                        }
+
+                        if (index == 1 & bit == 63) {
+                            castleRightsCopy &= ~(1L << 1);
+                        }
+                        if (index == 1 & bit == 56) {
+                            castleRightsCopy &= ~(1L);
+                        }
+
+
+                        //promotion + attack check
+                        if (i == 6 & bit > 56) {
+
+                            copy[i] &= ~(1L << bit);
+
+
+                            for (int promotionPieceType : new int[]{7, 8, 10, 11}) {
+
+                                copy[promotionPieceType] |= (1L << bit);
+
+                                long[] copyPromotion = new long[12];
+
+                                long[] teamCopiesPromotion = generateTeamLongs(copy);
+                                for (int l = 0; l < 12; l++) {
+                                    copyPromotion[l] = copy[l];
+                                }
+
+                                if ((board.checkForCheck(copy[9], board.generateSideAttackMask(copy, 1, teamCopiesPromotion[0], teamCopiesPromotion[1], teamCopiesPromotion[2]))) == false) {
+                                    legalMoves.add(new Move(num, bit, index, promotionPieceType, copyPromotion, castleRightsCopy, enPassTarget, i));
+
+                                }
+
+                                copy[promotionPieceType] &= ~(1L << bit);
+
+                            }
+
+
+                            copy[i] |= (1L << num);
+                            copy[index] |= (1L << bit);
+
+                            break;
+                        }
+
+
+                        if (!(board.checkForCheck(copy[9], board.generateSideAttackMask(copy, 1, teamCopies[0], teamCopies[1], teamCopies[2])))) {
+                            legalMoves.add(new Move(num, bit, copyArray(copy), i, index, castleRightsCopy, enPassTarget));
+                        }
+                        copy[i] &= ~(1L << bit);
+                        copy[i] |= (1L << num);
+
+                        copy[index] |= (1L << bit);
+
+
+                    }
+                    //loop through each standard move target square.
+                    for (Integer bit : moveIndices) {
+
+
+                        long[] copy = new long[12];
+
+
+                        for (int l = 0; l < 12; l++) {
+                            copy[l] = pieces[l];
+                        }
+                        //make move
+                        copy[i] &= ~(1L << num);
+                        copy[i] |= (1L << bit);
+
+
+                        long[] teamCopies = generateTeamLongs(copy);
+                        int enPassTarget = enPassSquare;
+
+                        long castleRightsCopy = castleRights;
+
+
+                        //Change castle rights if the rook is being moved
+                        if (i == 7) {
+                            if (num == 7) {
+                                castleRightsCopy &= ~(1L << 3);
+                            }
+                            if (num == 0) {
+                                castleRightsCopy &= ~(1L << 2);
+                            }
+                        }
+
+
+                        //nulls both castle rights of a side if king moves
+                        if (i == 9) {
+                            castleRights &= ~(1L << 3);
+
+                            castleRights &= ~(1L << 2);
+                        }
+
+                        if (i == 6 & (bit == num + 16)) {
+
+                            enPassTarget = num + 8;
+
+                        } else {
+                            enPassTarget = 64;
+                        }
+
+                        //promotion check
+                        if (i == 6 & bit > 56) {
+
+                            copy[i] &= ~(1L << bit);
+
+                            for (int promotionPieceType : new int[]{7, 8, 10, 11}) {
+
+                                copy[promotionPieceType] |= (1L << bit);
+
+                                long[] copyPromotion = new long[12];
+
+                                enPassTarget = 64;
+
+                                long[] teamCopiesPromotion = generateTeamLongs(copy);
+                                for (int l = 0; l < 12; l++) {
+                                    copyPromotion[l] = copy[l];
+                                }
+
+                                if ((board.checkForCheck(copy[9], board.generateSideAttackMask(copy, 1, teamCopiesPromotion[0], teamCopiesPromotion[1], teamCopiesPromotion[2]))) == false) {
+                                    legalMoves.add(new Move(num, bit, promotionPieceType, copyPromotion, castleRightsCopy, enPassTarget, i));
+
+                                }
+
+                                copy[promotionPieceType] &= ~(1L << bit);
+
+                            }
+
+
+                            copy[i] |= (1L << num);
+
+                            break;
+                        }
+
+
+                        //check for check after making hypothetical move
+                        if (!(board.checkForCheck(copy[9], board.generateSideAttackMask(copy, 1, teamCopies[0], teamCopies[1], teamCopies[2])))) {
+                            legalMoves.add(new Move(num, bit, copyArray(copy), i, castleRightsCopy, enPassTarget));
+                        }
+
+                        //undo move
+                        copy[i] &= ~(1L << bit);
+                        copy[i] |= (1L << num);
+
+
+                    }
+
+
+
+                }
         }
+
 
         return legalMoves;
     }

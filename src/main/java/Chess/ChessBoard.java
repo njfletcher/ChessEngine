@@ -658,11 +658,12 @@ public class ChessBoard {
 
 
 
+
         //pawns worth 1, knights/bishops worth 3, rook worth 5, queen worth 9, checkmate worth 10000
 
 
-        int evaluationWhite = 0;
-        int evaluationBlack = 0;
+        int evaluationWhite = 10;
+        int evaluationBlack = 10;
 
 
         int blackMoveSize= Program.generateBlackMoves(bitboards,castleRights,enPass).size();
@@ -796,6 +797,8 @@ public class ChessBoard {
                 evaluationBlack = -500;
 
         }
+
+
 
 
 
