@@ -120,7 +120,7 @@ public class Program {
 
         String rematchS ="";
         if(rematch==null){
-            playGame(fen,whiteId,challengeID,reader);
+            playGame(fen,whiteId,challengeID,reader,false);
         }
         else{
             rematchS = rematch.toString().replaceAll("\"","");
@@ -130,7 +130,7 @@ public class Program {
             final BufferedReader rematchRead = new BufferedReader(
                     new InputStreamReader(input));
 
-            playGame(fen,whiteId,rematchS,rematchRead);
+            playGame(fen,whiteId,rematchS,rematchRead,true);
         }
 
         System.out.println(rematchS);
@@ -143,7 +143,7 @@ public class Program {
     }
 
 
-    public static void playGame(String fen,String whiteId,String challengeId,BufferedReader reader) throws IOException {
+    public static void playGame(String fen,String whiteId,String challengeId,BufferedReader reader, boolean rematch) throws IOException {
 
         FenParser parser = new FenParser();
         Gson gson = new Gson();
@@ -161,6 +161,10 @@ public class Program {
 
         //checks what color the bot is playing for this game
         GameState.botSide = whiteId.equals("\"goosefish\"") ? 1 : -1;
+
+        if(rematch){
+            GameState.botSide *= -1;
+        }
 
 
         int count =0;
@@ -326,7 +330,13 @@ public class Program {
 
                 dic.put("offeringDraw", "false");
 
-                Lichess.sendPOSTRequest("/api/bot/game/" + challengeId + "/move/" + finalMove + "", "", dic);
+
+                try{
+                    Lichess.sendPOSTRequest("/api/bot/game/" + challengeId + "/move/" + finalMove + "", "", dic);
+                }
+                catch(Exception e){
+                    break;
+                }
 
                 GameState.moveCount++;
 

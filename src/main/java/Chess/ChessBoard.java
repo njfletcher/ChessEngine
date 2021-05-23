@@ -746,7 +746,7 @@ public class ChessBoard {
                 }
 
             }
-            if(count>=3){
+            if(count>=2){
                 if(GameState.botSide ==1){
                     evaluationWhite =-500;
                 }
