@@ -3,9 +3,9 @@ package Chess;
 public class MovePair {
 
    private  Move m;
-   private int evalScore;
+   private double evalScore;
 
-   public MovePair(Move move, int score){
+   public MovePair(Move move, double score){
 
        m = move;
        evalScore= score;
@@ -15,7 +15,7 @@ public class MovePair {
        return m;
    }
 
-    public int second(){
+    public double second(){
         return evalScore;
     }
 

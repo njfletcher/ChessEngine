@@ -637,7 +637,7 @@ public class ChessBoard {
 
     }
 
-    public static int evaluatePos(long[] bitboards,long castleRights, int enPass, int depth){
+    public static double evaluatePos(long[] bitboards,long castleRights, int enPass, int depth){
         //, long black, long white, long all
 
         ChessBoard board = new ChessBoard();
@@ -651,9 +651,9 @@ public class ChessBoard {
         ArrayList<Integer> whitePindices = indexSetBits(bitboards[6]);
 
 
-        int blackKindices = indexSetBits(bitboards[3]).size();
+        ArrayList<Integer> blackBindices = indexSetBits(bitboards[5]);
 
-        int whiteKindices = indexSetBits(bitboards[9]).size();
+        ArrayList<Integer> whiteBindices = indexSetBits(bitboards[11]);
 
 
 
@@ -662,8 +662,8 @@ public class ChessBoard {
         //pawns worth 1, knights/bishops worth 3, rook worth 5, queen worth 9, checkmate worth 10000
 
 
-        int evaluationWhite = 10;
-        int evaluationBlack = 10;
+        int specialWhite =0;
+        int specialBlack =0;
 
 
         int blackMoveSize= Program.generateBlackMoves(bitboards,castleRights,enPass).size();
@@ -692,49 +692,18 @@ public class ChessBoard {
         int simpleMatScore = (9 * (indexSetBits(bitboards[10]).size()- indexSetBits(bitboards[4]).size())) +
                 (5 * (indexSetBits(bitboards[7]).size()- indexSetBits(bitboards[1]).size())) +
                 (3 * (indexSetBits(bitboards[8]).size()- indexSetBits(bitboards[2]).size())) +
-                (3 * (indexSetBits(bitboards[11]).size()- indexSetBits(bitboards[5]).size())) +
+                (3 * (whiteBindices.size()- blackBindices.size())) +
                 (1 * (whitePindices.size()- blackPindices.size()));
 
 
 
-        int mobilityScore = (whiteMoveSize - blackMoveSize) /20;
-
-        int kingSafety = (whiteKindices - blackKindices)/4;
-
-        //check to see if knights are on a or h files, which is punished.
-
-        evaluationWhite -= indexSetBits((bitboards[8] & Lookups.fileTables[0]) | (bitboards[8] & Lookups.fileTables[3]) ).size();
-        evaluationBlack -= indexSetBits((bitboards[2] & Lookups.fileTables[0]) | (bitboards[2] & Lookups.fileTables[3]) ).size();
+        int mobilityScore = (whiteMoveSize - blackMoveSize);
 
 
 
-        //check for centralized/ developed pawns.
-        //evaluationWhite += indexSetBits(bitboards[6] & Lookups.evalTables[0]).size();
-        //evaluationBlack += indexSetBits(bitboards[0] & Lookups.evalTables[0]).size();
 
 
-        //check for stacked pawns
-       /* for(int i =0; i<blackPindices.size()-1;i++){
 
-            if(blackPindices.get(i)== blackPindices.get(i+1) + 8){
-                evaluationBlack-= 1;
-            }
-        }
-        for(int i =0; i<whitePindices.size()-1;i++){
-
-            if(whitePindices.get(i)== whitePindices.get(i+1) + 8){
-                evaluationWhite-= 1;
-            }
-        }
-
-        */
-
-        int random =0;
-
-        if(GameState.moveCount>=3){
-
-            random += ((Math.random() * 2) + 1) /2;
-        }
 
         if(GameState.moveHistory != null){
 
@@ -748,13 +717,14 @@ public class ChessBoard {
             }
             if(count>=2){
                 if(GameState.botSide ==1){
-                    evaluationWhite =-500;
+                    specialWhite =-500;
                 }
                 else{
-                    evaluationBlack =-500;
+                    specialBlack =-500;
                 }
             }
         }
+
 
 
 
@@ -765,22 +735,22 @@ public class ChessBoard {
         if(blackMoveSize==0 & (blackCheck == true )){
 
             if(depth>0){
-                evaluationWhite =1000 * depth;
+                specialWhite =1000 * depth;
 
             }
             else {
-                evaluationWhite = 1000;
+                specialWhite = 1000;
             }
 
         }
 
         if(whiteMoveSize==0 & (whiteCheck == true )){
             if(depth>0){
-                evaluationBlack =1000 * depth;
+                specialBlack =1000 * depth;
 
             }
             else {
-                evaluationBlack = 1000;
+                specialBlack = 1000;
             }
         }
 
@@ -789,12 +759,12 @@ public class ChessBoard {
         //stalemates
         if(blackMoveSize==0 & (blackCheck == false )){
 
-            evaluationWhite = -500;
+            specialWhite = -500;
 
         }
         if(whiteMoveSize==0 & (whiteCheck== false )){
 
-                evaluationBlack = -500;
+                specialBlack = -500;
 
         }
 
@@ -804,7 +774,8 @@ public class ChessBoard {
 
 
 
-        return evaluationWhite -evaluationBlack + simpleMatScore + random + mobilityScore + kingSafety;
+        return (specialWhite -specialBlack)+ (.80 * (simpleMatScore) + .20 * (mobilityScore));
+        //mobilityScore + kingSafety;
 
 
 

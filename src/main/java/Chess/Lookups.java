@@ -42,7 +42,7 @@ public class Lookups {
 
 
             //Middle of the board, used mostly for checking for centralized pawns.
-            0b0000000000000000011111100111111001111110011111100000000000000000L
+            0b0000000000000000000000000111111001111110000000000000000000000000L
 
 
     };

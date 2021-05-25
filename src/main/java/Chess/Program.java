@@ -32,20 +32,9 @@ public class Program {
 
 
 
-        /*parser.fenToBitboards("4k3/8/8/p7/7P/8/8/4K3 b - 23 0 1");
+        System.out.println("Bot running....");
 
-        GameState.updatePiecesArray();
-
-
-        ArrayList<Move> moves = generateBlackMoves(GameState.statePieces,0000L,23);
-
-        for(Move m: moves){
-            System.out.println(m);
-        }
-
-         */
-
-       InputStream is =  Lichess.sendRequest("GET","/api/stream/event");
+        InputStream is =  Lichess.sendRequest("GET","/api/stream/event");
 
         final BufferedReader reader = new BufferedReader(
                 new InputStreamReader(is));
@@ -91,12 +80,16 @@ public class Program {
 
 
 
+
+
     }
 
     public static void startGame(String oppID, String challengeID) throws IOException {
 
         FenParser parser = new FenParser();
         Gson gson = new Gson();
+
+
 
 
 
@@ -116,6 +109,8 @@ public class Program {
         String fen = coderollsJsonObject.get("initialFen").toString().replaceAll("\"","");
 
         JsonElement rematch = coderollsJsonObject.get("state").getAsJsonObject().get("rematch");//.toString().replaceAll("\"","");
+
+
 
 
         String rematchS ="";
@@ -144,6 +139,15 @@ public class Program {
 
 
     public static void playGame(String fen,String whiteId,String challengeId,BufferedReader reader, boolean rematch) throws IOException {
+
+
+
+        System.out.println("Game Started...." + "\n" +
+        "challengeId: " + challengeId + "\n" +
+                        "fen: " + fen + "\n" +
+                        " White: " + whiteId + "\n" +
+                "Rematch?: " + rematch
+                );
 
         FenParser parser = new FenParser();
         Gson gson = new Gson();
@@ -180,8 +184,6 @@ public class Program {
 
         }
 
-        System.out.println(even + " ");
-
         while ((line1 = reader.readLine())!= null) {
 
             if(line1.length() != 0) {
@@ -209,25 +211,17 @@ public class Program {
 
                         System.out.println(line1);
 
+                        System.out.println("Before: ");
+
+                        ChessBoard.printBitBoard(GameState.updatePiecesSum()[2]);
+
+
+
                         String[] moves = json.get("moves").toString().split(" ");
 
                         System.out.println(moves[moves.length - 1].replaceAll("\"", ""));
 
                         long[] movePieces1 = GameState.generatePiecesArray();
-
-                        System.out.println("Before: ");
-
-                        System.out.println(Long.toBinaryString(GameState.castleRights));
-
-                        for(int i =0; i<12;i++){
-                            System.out.println(i);
-
-                            ChessBoard.printBitBoard(movePieces1[i]);
-                        }
-
-
-
-
 
 
                         Lichess.recieveIncoming(moves[moves.length - 1].replaceAll("\"", ""));
@@ -241,20 +235,9 @@ public class Program {
 
                         GameState.moveHistory.add(copyArray(movePieces2));
 
-
                         System.out.println("After: ");
 
-                        System.out.println(Long.toBinaryString(GameState.castleRights));
-                        for(int i =0; i<12;i++){
-                            System.out.println(i);
-
-                            ChessBoard.printBitBoard(movePieces2[i]);
-                        }
-
-
-
-
-
+                        ChessBoard.printBitBoard(GameState.updatePiecesSum()[2]);
 
                         GameState.sideToMove *= -1;
 
@@ -269,19 +252,6 @@ public class Program {
                 System.out.println("Bot Turn");
                 GameState.updatePiecesArray();
 
-                System.out.println("Before: ");
-
-                System.out.println(Long.toBinaryString(GameState.castleRights));
-                for(int i =0; i<12;i++){
-                    System.out.println(i);
-
-                    ChessBoard.printBitBoard(GameState.statePieces[i]);
-                }
-
-
-
-
-
 
                 long castle = GameState.castleRights;
                 int enPassant = GameState.enPassant;
@@ -293,33 +263,20 @@ public class Program {
                 boolean isMaximizer = (GameState.botSide == 1) ? true : false;
 
 
+                System.out.println("Before: ");
+
+                ChessBoard.printBitBoard(GameState.updatePiecesSum()[2]);
 
 
 
-                Move move = miniMax(GameState.statePieces, castle, enPassant, 4, sideTurn, isMaximizer, Integer.MIN_VALUE, Integer.MAX_VALUE).first();
+
+
+                Move move = miniMax(GameState.statePieces, castle, enPassant, 4, sideTurn, isMaximizer, Double.MIN_VALUE, Double.MAX_VALUE).first();
 
                 System.out.println(move);
 
-                System.out.println("After: ");
-
-                System.out.println(Long.toBinaryString(GameState.castleRights));
-                for(int i =0; i<12;i++){
-                    System.out.println(i);
-
-                    ChessBoard.printBitBoard(move.bitboardCopys[i]);
-                }
 
 
-
-
-
-                GameState.statePieces = move.bitboardCopys;
-
-                GameState.castleRights = move.castleRightsCopy;
-
-                GameState.enPassant = move.enPassSquare;
-
-                GameState.updateIndivBoards();
 
                 String finalMove = Lichess.translateMove(move);
 
@@ -338,6 +295,14 @@ public class Program {
                     break;
                 }
 
+                GameState.statePieces = move.bitboardCopys;
+
+                GameState.castleRights = move.castleRightsCopy;
+
+                GameState.enPassant = move.enPassSquare;
+
+                GameState.updateIndivBoards();
+
                 GameState.moveCount++;
 
 
@@ -346,6 +311,10 @@ public class Program {
 
 
                 GameState.sideToMove *= -1;
+
+                System.out.println("After: ");
+
+                ChessBoard.printBitBoard(GameState.updatePiecesSum()[2]);
 
 
                 System.out.println("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
@@ -359,7 +328,7 @@ public class Program {
 
 
 
-    public static MovePair miniMax(long[] pieces,long castleRights,int enPassSquare, int depth, int side, boolean isMaxPlayer, int alpha, int beta) {
+    public static MovePair miniMax(long[] pieces,long castleRights,int enPassSquare, int depth, int side, boolean isMaxPlayer, double alpha, double beta) {
 
         if (depth == 0 || (ChessBoard.checkForCheckmate(pieces,castleRights,enPassSquare,side)== true)|| (ChessBoard.checkForStalemate(pieces,castleRights,enPassSquare,side)== true)) {
             //| (ChessBoard.checkForCheckmate(pieces,castleRights,enPassSquare,side)== true)| (ChessBoard.checkForStalemate(pieces,castleRights,enPassSquare,side)== true)
@@ -376,17 +345,8 @@ public class Program {
 
         //sortMoves(possibleMoves,depth);
 
-        if(depth==4){
-            for(Move m : possibleMoves) {
-                System.out.println(m);
-            }
-        }
 
-
-
-
-
-        int bestVal = isMaxPlayer ? Integer.MIN_VALUE : Integer.MAX_VALUE;
+        double bestVal = isMaxPlayer ? Double.MIN_VALUE : Double.MAX_VALUE;
 
         for(Move m: possibleMoves){
 
@@ -401,7 +361,7 @@ public class Program {
 
 
 
-            int currValue = miniMax(copy,m.castleRightsCopy,m.enPassSquare,depth-1,-1* side,!isMaxPlayer,alpha,beta).second();
+            double currValue = miniMax(copy,m.castleRightsCopy,m.enPassSquare,depth-1,-1* side,!isMaxPlayer,alpha,beta).second();
 
             if(isMaxPlayer){
 
