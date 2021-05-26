@@ -637,7 +637,7 @@ public class ChessBoard {
 
     }
 
-    public static double evaluatePos(long[] bitboards,long castleRights, int enPass, int depth){
+    public static int evaluatePos(long[] bitboards,long castleRights, int enPass, int depth){
         //, long black, long white, long all
 
         ChessBoard board = new ChessBoard();
@@ -663,15 +663,13 @@ public class ChessBoard {
 
 
         int specialWhite =0;
+
         int specialBlack =0;
+
 
 
         int blackMoveSize= Program.generateBlackMoves(bitboards,castleRights,enPass).size();
         int whiteMoveSize= Program.generateWhiteMoves(bitboards,castleRights,enPass).size();
-
-
-
-
 
 
         long blackAttack = board.generateSideAttackMask(bitboards,1,teamLongs[0],teamLongs[1],teamLongs[2]);
@@ -681,14 +679,6 @@ public class ChessBoard {
 
         boolean whiteCheck = board.checkForCheck(bitboards[9],blackAttack);
 
-
-       /* System.out.println(indexSetBits(bitboards[10]).size()- indexSetBits(bitboards[4]).size());
-        System.out.println(indexSetBits(bitboards[7]).size()- indexSetBits(bitboards[1]).size());
-        System.out.println(indexSetBits(bitboards[8]).size()- indexSetBits(bitboards[2]).size());
-        System.out.println(indexSetBits(bitboards[11]).size()- indexSetBits(bitboards[5]).size());
-        System.out.println(indexSetBits(bitboards[6]).size()- indexSetBits(bitboards[0]).size());
-
-        */
         int simpleMatScore = (9 * (indexSetBits(bitboards[10]).size()- indexSetBits(bitboards[4]).size())) +
                 (5 * (indexSetBits(bitboards[7]).size()- indexSetBits(bitboards[1]).size())) +
                 (3 * (indexSetBits(bitboards[8]).size()- indexSetBits(bitboards[2]).size())) +
@@ -697,14 +687,9 @@ public class ChessBoard {
 
 
 
-        int mobilityScore = (whiteMoveSize - blackMoveSize);
+        int mobilityScore = 0;
 
-
-
-
-
-
-
+        //three fold repition on bot's end check
         if(GameState.moveHistory != null){
 
             int count =0;
@@ -724,12 +709,6 @@ public class ChessBoard {
                 }
             }
         }
-
-
-
-
-
-
 
         //checkmates
         if(blackMoveSize==0 & (blackCheck == true )){
@@ -774,14 +753,8 @@ public class ChessBoard {
 
 
 
-        return (specialWhite -specialBlack)+ (.80 * (simpleMatScore) + .20 * (mobilityScore));
-        //mobilityScore + kingSafety;
+        return (specialWhite -specialBlack)+ (simpleMatScore +mobilityScore);
 
-
-
-
-
-        //return (int)(Math.random() * 10)+1;
     }
 
     public static long[] initBishopMasks() {

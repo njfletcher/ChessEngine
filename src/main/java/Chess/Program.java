@@ -32,6 +32,7 @@ public class Program {
 
 
 
+
         System.out.println("Bot running....");
 
         InputStream is =  Lichess.sendRequest("GET","/api/stream/event");
@@ -77,9 +78,6 @@ public class Program {
 
         }
         reader.close();
-
-
-
 
 
     }
@@ -271,7 +269,7 @@ public class Program {
 
 
 
-                Move move = miniMax(GameState.statePieces, castle, enPassant, 4, sideTurn, isMaximizer, Double.MIN_VALUE, Double.MAX_VALUE).first();
+                Move move = miniMax(GameState.statePieces, castle, enPassant, 4, sideTurn, isMaximizer, Integer.MIN_VALUE, Integer.MAX_VALUE).first();
 
                 System.out.println(move);
 
@@ -328,15 +326,12 @@ public class Program {
 
 
 
-    public static MovePair miniMax(long[] pieces,long castleRights,int enPassSquare, int depth, int side, boolean isMaxPlayer, double alpha, double beta) {
+    public static MovePair miniMax(long[] pieces,long castleRights,int enPassSquare, int depth, int side, boolean isMaxPlayer, int alpha, int beta) {
 
         if (depth == 0 || (ChessBoard.checkForCheckmate(pieces,castleRights,enPassSquare,side)== true)|| (ChessBoard.checkForStalemate(pieces,castleRights,enPassSquare,side)== true)) {
             //| (ChessBoard.checkForCheckmate(pieces,castleRights,enPassSquare,side)== true)| (ChessBoard.checkForStalemate(pieces,castleRights,enPassSquare,side)== true)
             return new MovePair(null,ChessBoard.evaluatePos(pieces,castleRights,enPassSquare,depth));
         }
-
-
-
 
         Move bestMove= null;
         ArrayList<Move> possibleMoves = getCurrentPlayerMoves(pieces, side,castleRights,enPassSquare);
@@ -346,7 +341,7 @@ public class Program {
         //sortMoves(possibleMoves,depth);
 
 
-        double bestVal = isMaxPlayer ? Double.MIN_VALUE : Double.MAX_VALUE;
+        int bestVal = isMaxPlayer ? Integer.MIN_VALUE : Integer.MAX_VALUE;
 
         for(Move m: possibleMoves){
 
@@ -361,7 +356,7 @@ public class Program {
 
 
 
-            double currValue = miniMax(copy,m.castleRightsCopy,m.enPassSquare,depth-1,-1* side,!isMaxPlayer,alpha,beta).second();
+            int currValue = miniMax(copy,m.castleRightsCopy,m.enPassSquare,depth-1,-1* side,!isMaxPlayer,alpha,beta).second();
 
             if(isMaxPlayer){
 

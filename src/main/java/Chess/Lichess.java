@@ -301,6 +301,9 @@ public class Lichess {
     public static String translateMove(Move m){
 
 
+        if(m ==null){
+            return "";
+        }
         String move = boardSqs.getboardSq(m.squareFrom).toString() + boardSqs.getboardSq(m.squareTo).toString();
 
         return move;
