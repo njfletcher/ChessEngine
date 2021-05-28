@@ -637,9 +637,10 @@ public class ChessBoard {
 
     }
 
-    public static int evaluatePos(long[] bitboards,long castleRights, int enPass, int depth){
+    public static int evaluatePos(Move move,long castleRights, int enPass, int depth){
         //, long black, long white, long all
 
+        long[] bitboards = Program.copyArray(move.bitboardCopys);
         ChessBoard board = new ChessBoard();
 
         long[] teamLongs = Program.generateTeamLongs(bitboards);
@@ -688,6 +689,34 @@ public class ChessBoard {
 
 
         int mobilityScore = 0;
+
+        if(GameState.moveCount <=5){
+            if(move.pieceType == 4){
+                specialBlack-=1;
+            }
+            if(move.pieceType == 10){
+                specialWhite-=1;
+            }
+        }
+
+
+
+        if(move.castle){
+
+            if(GameState.botSide == 1) specialWhite+=2;
+            if(GameState.botSide == -1)specialBlack+=2;
+        }
+
+
+        if((1l<<3 & GameState.castleRights)!= 0 | (1l<<2 & GameState.castleRights)!= 0){
+
+            specialWhite+=2;
+        }
+
+        if((1l<<1 & GameState.castleRights)!= 0 | (1l & GameState.castleRights)!= 0){
+
+            specialBlack+=2;
+        }
 
         //three fold repition on bot's end check
         if(GameState.moveHistory != null){

@@ -112,6 +112,10 @@ public class Move{
 
     }
 
+    public Move() {
+
+    }
+
     public String toString(){
 
         return "From: " + squareFrom + "(" + boardSqs.getboardSq(squareFrom) + ")" + "\n"
