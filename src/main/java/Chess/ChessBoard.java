@@ -637,10 +637,11 @@ public class ChessBoard {
 
     }
 
-    public static int evaluatePos(Move move,long castleRights, int enPass, int depth){
+    public static int evaluatePos(Move move,long castleRights, int enPass, int depth, int sideToMove,int moveCount, ArrayList<long[]> moveH){
         //, long black, long white, long all
 
         long[] bitboards = Program.copyArray(move.bitboardCopys);
+
         ChessBoard board = new ChessBoard();
 
         long[] teamLongs = Program.generateTeamLongs(bitboards);
@@ -690,54 +691,59 @@ public class ChessBoard {
 
         int mobilityScore = 0;
 
-        if(GameState.moveCount <=5){
-            if(move.pieceType == 4){
-                specialBlack-=1;
-            }
-            if(move.pieceType == 10){
-                specialWhite-=1;
-            }
+
+
+        if(moveCount<=20){
+
+            int numWCentral = indexSetBits(bitboards[6] & Lookups.evalTables[0]).size();
+            int numBCentral = indexSetBits(bitboards[0] & Lookups.evalTables[0]).size();
+
+            specialWhite += numWCentral - numBCentral;
         }
+
+        if(moveCount>20){
+
+            int numWUndeveloped = indexSetBits(teamLongs[1] & Lookups.rankTables[0]).size();
+            int numBUndeveloped = indexSetBits(teamLongs[0] & Lookups.rankTables[0]<<7).size();
+
+            specialWhite += -1 * (numWUndeveloped- numBUndeveloped);
+
+
+        }
+
 
 
 
         if(move.castle){
 
-            if(GameState.botSide == 1) specialWhite+=2;
-            if(GameState.botSide == -1)specialBlack+=2;
+            if(sideToMove==1) specialWhite+=2;
+            if(sideToMove == -1)specialBlack+=2;
         }
 
 
-        if((1l<<3 & GameState.castleRights)!= 0 | (1l<<2 & GameState.castleRights)!= 0){
 
-            specialWhite+=2;
-        }
-
-        if((1l<<1 & GameState.castleRights)!= 0 | (1l & GameState.castleRights)!= 0){
-
-            specialBlack+=2;
-        }
-
-        //three fold repition on bot's end check
-        if(GameState.moveHistory != null){
+        //three fold repition(and general move repitition) on bot's end check
+        if(moveH != null){
 
             int count =0;
-            for(long[] longs: GameState.moveHistory){
+            for(long[] longs: moveH){
 
                 if(Arrays.equals(longs,bitboards)){
                     count++;
                 }
 
             }
-            if(count>=2){
-                if(GameState.botSide ==1){
-                    specialWhite =-500;
+            if(count>=1){
+                if(sideToMove ==1){
+                    specialBlack = 500;
                 }
                 else{
-                    specialBlack =-500;
+                    specialWhite = 500;
                 }
             }
         }
+
+
 
         //checkmates
         if(blackMoveSize==0 & (blackCheck == true )){
@@ -767,12 +773,12 @@ public class ChessBoard {
         //stalemates
         if(blackMoveSize==0 & (blackCheck == false )){
 
-            specialWhite = -500;
+            specialBlack = 500;
 
         }
         if(whiteMoveSize==0 & (whiteCheck== false )){
 
-                specialBlack = -500;
+                specialWhite = 500;
 
         }
 
@@ -782,7 +788,7 @@ public class ChessBoard {
 
 
 
-        return (specialWhite -specialBlack)+ (simpleMatScore +mobilityScore);
+        return (specialWhite -specialBlack)+ (2*simpleMatScore +mobilityScore);
 
     }
 
@@ -941,6 +947,30 @@ public class ChessBoard {
         }
 
         else return false;
+    }
+
+    public static boolean checkForRepitition(long[] pieces, long castles, int enPass, int side, Move move, ArrayList<long[]> history){
+
+
+        if(history != null){
+
+            int count =0;
+            for(long[] longs: history){
+
+                if(Arrays.equals(longs,pieces)){
+                    count++;
+                }
+
+            }
+            if(count>=3){
+                return true;
+            }
+            else return false;
+        }
+        else{
+            return false;
+        }
+
     }
 
 

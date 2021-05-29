@@ -213,13 +213,18 @@ public class Program {
 
                         ChessBoard.printBitBoard(GameState.updatePiecesSum()[2]);
 
+                        for(long[] l: GameState.moveHistory){
+
+                            System.out.print(Arrays.asList(l).toString() + " ");
+                        }
+
+
 
 
                         String[] moves = json.get("moves").toString().split(" ");
 
                         System.out.println(moves[moves.length - 1].replaceAll("\"", ""));
 
-                        long[] movePieces1 = GameState.generatePiecesArray();
 
 
                         Lichess.recieveIncoming(moves[moves.length - 1].replaceAll("\"", ""));
@@ -227,15 +232,18 @@ public class Program {
                         GameState.moveCount++;
 
 
+
                         GameState.updateIndivBoards();
 
-                        long[] movePieces2 = GameState.generatePiecesArray();
 
-                        GameState.moveHistory.add(copyArray(movePieces2));
+
+                        GameState.moveHistory.add(copyArray(GameState.statePieces));
 
                         System.out.println("After: ");
 
                         ChessBoard.printBitBoard(GameState.updatePiecesSum()[2]);
+
+                        System.out.println(GameState.moveCount);
 
                         GameState.sideToMove *= -1;
 
@@ -265,6 +273,11 @@ public class Program {
 
                 ChessBoard.printBitBoard(GameState.updatePiecesSum()[2]);
 
+                for(long[] l: GameState.moveHistory){
+
+                    System.out.print(Arrays.asList(l).toString() + " ");
+                }
+
 
 
 
@@ -272,7 +285,7 @@ public class Program {
 
                 start.bitboardCopys = copyArray(GameState.statePieces);
 
-                Move move = miniMax(start, castle, enPassant, 4, sideTurn, isMaximizer, Integer.MIN_VALUE, Integer.MAX_VALUE).first();
+                Move move = miniMax(start, castle, enPassant, 4, sideTurn, isMaximizer, Integer.MIN_VALUE, Integer.MAX_VALUE,GameState.moveCount,GameState.moveHistory).first();
 
                 System.out.println(move);
 
@@ -317,6 +330,8 @@ public class Program {
 
                 ChessBoard.printBitBoard(GameState.updatePiecesSum()[2]);
 
+                System.out.println(GameState.moveCount);
+
 
                 System.out.println("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
             }
@@ -329,14 +344,20 @@ public class Program {
 
 
 
-    public static MovePair miniMax(Move possibleMove,long castleRights,int enPassSquare, int depth, int side, boolean isMaxPlayer, int alpha, int beta) {
+    public static MovePair miniMax(Move possibleMove,long castleRights,int enPassSquare, int depth, int side, boolean isMaxPlayer, int alpha, int beta,int moveCt,ArrayList<long[]> moves) {
 
+
+        ArrayList<long[]> history = (ArrayList<long[]>) moves.clone();
         long[] pieces = copyArray(possibleMove.bitboardCopys);
-        if (depth == 0 || (ChessBoard.checkForCheckmate(pieces,castleRights,enPassSquare,side)== true)|| (ChessBoard.checkForStalemate(pieces,castleRights,enPassSquare,side)== true)) {
+        if (depth == 0 || (ChessBoard.checkForCheckmate(pieces,castleRights,enPassSquare,side)== true)|| (ChessBoard.checkForStalemate(pieces,castleRights,enPassSquare,side)== true)
+            ){//|| ChessBoard.checkForRepitition(possibleMove.bitboardCopys,castleRights,enPassSquare,side,possibleMove,history)) {
             //| (ChessBoard.checkForCheckmate(pieces,castleRights,enPassSquare,side)== true)| (ChessBoard.checkForStalemate(pieces,castleRights,enPassSquare,side)== true)
-            return new MovePair(null,ChessBoard.evaluatePos(possibleMove,castleRights,enPassSquare,depth));
+            return new MovePair(null,ChessBoard.evaluatePos(possibleMove,castleRights,enPassSquare,depth,side,moveCt,history));
         }
 
+        history.add(possibleMove.bitboardCopys);
+
+        moveCt++;
         Move bestMove= null;
         ArrayList<Move> possibleMoves = getCurrentPlayerMoves(pieces, side,castleRights,enPassSquare);
 
@@ -360,7 +381,7 @@ public class Program {
 
 
 
-            int currValue = miniMax(m,m.castleRightsCopy,m.enPassSquare,depth-1,-1* side,!isMaxPlayer,alpha,beta).second();
+            int currValue = miniMax(m,m.castleRightsCopy,m.enPassSquare,depth-1,-1* side,!isMaxPlayer,alpha,beta,moveCt,history).second();
 
             if(isMaxPlayer){
 
