@@ -637,7 +637,7 @@ public class ChessBoard {
 
     }
 
-    public static int evaluatePos(Move move,long castleRights, int enPass, int depth, int sideToMove,int moveCount, ArrayList<long[]> moveH){
+    public static int evaluatePos(Move move,long castleRights, int enPass, int depth, int sideToMove,int moveCount){
         //, long black, long white, long all
 
         long[] bitboards = Program.copyArray(move.bitboardCopys);
@@ -648,26 +648,7 @@ public class ChessBoard {
 
 
 
-        ArrayList<Integer> blackPindices = indexSetBits(bitboards[0]);
-
-        ArrayList<Integer> whitePindices = indexSetBits(bitboards[6]);
-
-
-        ArrayList<Integer> blackBindices = indexSetBits(bitboards[5]);
-
-        ArrayList<Integer> whiteBindices = indexSetBits(bitboards[11]);
-
-
-
-
-
-        //pawns worth 1, knights/bishops worth 3, rook worth 5, queen worth 9, checkmate worth 10000
-
-
-        int specialWhite =0;
-
-        int specialBlack =0;
-
+        //pawns worth 100, knights/bishops worth 320/330, rook worth 500, queen worth 900, checkmate worth 10000
 
 
         int blackMoveSize= Program.generateBlackMoves(bitboards,castleRights,enPass).size();
@@ -681,115 +662,141 @@ public class ChessBoard {
 
         boolean whiteCheck = board.checkForCheck(bitboards[9],blackAttack);
 
-        int simpleMatScore = (9 * (indexSetBits(bitboards[10]).size()- indexSetBits(bitboards[4]).size())) +
-                (5 * (indexSetBits(bitboards[7]).size()- indexSetBits(bitboards[1]).size())) +
-                (3 * (indexSetBits(bitboards[8]).size()- indexSetBits(bitboards[2]).size())) +
-                (3 * (whiteBindices.size()- blackBindices.size())) +
-                (1 * (whitePindices.size()- blackPindices.size()));
 
-
-
-        int mobilityScore = 0;
-
-
-
-        if(moveCount<=20){
-
-            int numWCentral = indexSetBits(bitboards[6] & Lookups.evalTables[0]).size();
-            int numBCentral = indexSetBits(bitboards[0] & Lookups.evalTables[0]).size();
-
-            specialWhite += numWCentral - numBCentral;
-        }
-
-        if(moveCount>20){
-
-            int numWUndeveloped = indexSetBits(teamLongs[1] & Lookups.rankTables[0]).size();
-            int numBUndeveloped = indexSetBits(teamLongs[0] & Lookups.rankTables[0]<<7).size();
-
-            specialWhite += -1 * (numWUndeveloped- numBUndeveloped);
-
-
-        }
-
-
-
-
-        if(move.castle){
-
-            if(sideToMove==1) specialWhite+=2;
-            if(sideToMove == -1)specialBlack+=2;
-        }
-
-
-
-        //three fold repition(and general move repitition) on bot's end check
-        if(moveH != null){
-
-            int count =0;
-            for(long[] longs: moveH){
-
-                if(Arrays.equals(longs,bitboards)){
-                    count++;
-                }
-
-            }
-            if(count>=1){
-                if(sideToMove ==1){
-                    specialBlack = 500;
-                }
-                else{
-                    specialWhite = 500;
-                }
-            }
-        }
-
+        int score =0;
 
 
         //checkmates
-        if(blackMoveSize==0 & (blackCheck == true )){
+        if(blackMoveSize ==0 & (blackCheck == true )){
 
             if(depth>0){
-                specialWhite =1000 * depth;
+                score = 20000 * depth;
 
             }
             else {
-                specialWhite = 1000;
+                score = 20000;
             }
+            return score;
 
         }
 
         if(whiteMoveSize==0 & (whiteCheck == true )){
             if(depth>0){
-                specialBlack =1000 * depth;
+                score = -20000 * depth;
 
             }
             else {
-                specialBlack = 1000;
+                score = -20000;
             }
+            return score;
         }
+
+
+         score = (900 * (indexSetBits(bitboards[10]).size()- indexSetBits(bitboards[4]).size())) +
+                (500 * (indexSetBits(bitboards[7]).size()- indexSetBits(bitboards[1]).size())) +
+                (320 * (indexSetBits(bitboards[8]).size()- indexSetBits(bitboards[2]).size())) +
+                (330 * (indexSetBits(bitboards[11]).size()- indexSetBits(bitboards[5]).size())) +
+                (100 * (indexSetBits(bitboards[6]).size()- indexSetBits(bitboards[0]).size()));
+
+
+
+        int phase = getGamePhase(bitboards,moveCount);
+        int[][] pst =null;
+
+
+        if(phase==1){
+            pst = Lookups.nonEndgamePST;
+        }
+        if(phase==-1){
+            pst = Lookups.endgamePST;
+        }
+
+        for(int i =0; i<12; i++){
+
+            for(Integer index : indexSetBits(bitboards[i])){
+
+                switch(i){
+
+                    case 0:
+                        score -= pst[0][index];
+                        break;
+                    case 1:
+                        score -= pst[3][index];
+                        break;
+                    case 2:
+                        score -= pst[1][index];
+                        break;
+                    case 3:
+                        score -= pst[5][index];
+                        break;
+                    case 4:
+                        score -= pst[4][index];
+                        break;
+                    case 5:
+                        score -= pst[2][index];
+                        break;
+                    case 6:
+                        score += pst[0][mirrorBoardSqs.getboardSq(index).ordinal()];
+                        break;
+                    case 7:
+                        score += pst[3][mirrorBoardSqs.getboardSq(index).ordinal()];
+                        break;
+                    case 8:
+                        score += pst[1][mirrorBoardSqs.getboardSq(index).ordinal()];
+                        break;
+                    case 9:
+                        score += pst[5][mirrorBoardSqs.getboardSq(index).ordinal()];
+                        break;
+                    case 10:
+                        score += pst[4][mirrorBoardSqs.getboardSq(index).ordinal()];
+                        break;
+                    case 11:
+                        score += pst[2][mirrorBoardSqs.getboardSq(index).ordinal()];
+                        break;
+                }
+
+
+
+
+            }
+
+
+
+        }
+
+
+
 
 
 
         //stalemates
         if(blackMoveSize==0 & (blackCheck == false )){
 
-            specialBlack = 500;
+            score = 10000;
 
         }
         if(whiteMoveSize==0 & (whiteCheck== false )){
 
-                specialWhite = 500;
+                score = -10000;
 
         }
 
 
 
+        return score;
+
+    }
+
+    //returns 1 for opening/middle game, returns -1 for end game.
+    public static int getGamePhase(long[] pieces,int moveCt){
 
 
-
-
-        return (specialWhite -specialBlack)+ (2*simpleMatScore +mobilityScore);
-
+        if(true){
+            return 1;
+        }
+        else{
+            return -1;
+        }
     }
 
     public static long[] initBishopMasks() {
@@ -1032,6 +1039,34 @@ public class ChessBoard {
 
         }
         return s;
+    }
+
+
+    public enum mirrorBoardSqs{
+
+        a8,b8,c8,d8,e8,f8,g8,h8,
+        a7,b7,c7,d7,e7,f7,g7,h7,
+        a6,b6,c6,d6,e6,f6,g6,h6,
+        a5,b5,c5,d5,e5,f5,g5,h5,
+        a4,b4,c4,d4,e4,f4,g4,h4,
+        a3,b3,c3,d3,e3,f3,g3,h3,
+        a2,b2,c2,d2,e2,f2,g2,h2,
+        a1,b1,c1,d1,e1,f1,g1,h1;
+
+        private static boardSqs[] list = boardSqs.values();
+
+        public static boardSqs getboardSq(int i) {
+            return list[i];
+        }
+
+        public static int listGetLastIndex() {
+            return list.length - 1;
+        }
+
+        public static int getBitofSquare(String square){
+
+            return boardSqs.valueOf(square).ordinal();
+        }
     }
 
 
