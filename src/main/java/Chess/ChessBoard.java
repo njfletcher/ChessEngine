@@ -663,6 +663,15 @@ public class ChessBoard {
         boolean whiteCheck = board.checkForCheck(bitboards[9],blackAttack);
 
 
+        ArrayList<Integer> wQueens = indexSetBits(bitboards[10]);
+        ArrayList<Integer> bQueens = indexSetBits(bitboards[4]);
+        ArrayList<Integer> wBishops = indexSetBits(bitboards[11]);
+        ArrayList<Integer> bBishops = indexSetBits(bitboards[5]);
+        ArrayList<Integer> wKnights = indexSetBits(bitboards[8]);
+        ArrayList<Integer> bKnights = indexSetBits(bitboards[2]);
+
+
+
         int score =0;
 
 
@@ -692,15 +701,30 @@ public class ChessBoard {
         }
 
 
-         score = (900 * (indexSetBits(bitboards[10]).size()- indexSetBits(bitboards[4]).size())) +
+         score = (900 * (wQueens.size()- bQueens.size())) +
                 (500 * (indexSetBits(bitboards[7]).size()- indexSetBits(bitboards[1]).size())) +
-                (320 * (indexSetBits(bitboards[8]).size()- indexSetBits(bitboards[2]).size())) +
-                (330 * (indexSetBits(bitboards[11]).size()- indexSetBits(bitboards[5]).size())) +
+                (320 * (wKnights.size()- bKnights.size())) +
+                (330 * (wBishops.size()- bBishops.size())) +
                 (100 * (indexSetBits(bitboards[6]).size()- indexSetBits(bitboards[0]).size()));
 
 
 
-        int phase = getGamePhase(bitboards,moveCount);
+
+        boolean bothQueens = false;
+        boolean majorPieces = false;
+
+        if(wQueens.size() == 0 &&  bQueens.size()==0){
+            bothQueens = true;
+
+        }
+        else{
+            if((wKnights.size()==0 && wBishops.size()==0) || (bBishops.size()==0 && bKnights.size()==0)){
+                majorPieces = true;
+            }
+        }
+
+
+        int phase = getGamePhase(moveCount,bothQueens,majorPieces);
         int[][] pst =null;
 
 
@@ -769,7 +793,7 @@ public class ChessBoard {
 
 
 
-        //stalemates
+       /* //stalemates
         if(blackMoveSize==0 & (blackCheck == false )){
 
             score = 10000;
@@ -782,20 +806,23 @@ public class ChessBoard {
         }
 
 
+        */
+
 
         return score;
 
     }
 
     //returns 1 for opening/middle game, returns -1 for end game.
-    public static int getGamePhase(long[] pieces,int moveCt){
+    public static int getGamePhase(int moveCt,boolean queens,boolean otherPieces){
 
 
-        if(true){
-            return 1;
+        if(moveCt>=35 || queens || otherPieces){
+
+            return -1;
         }
         else{
-            return -1;
+            return 1;
         }
     }
 
