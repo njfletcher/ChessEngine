@@ -182,6 +182,8 @@ public class Program {
 
         }
 
+        boolean isMaximizer = (GameState.botSide == 1) ? true : false;
+
         while ((line1 = reader.readLine())!= null) {
 
             if(line1.length() != 0) {
@@ -227,6 +229,7 @@ public class Program {
                         }
 
 
+
                         GameState.moveCount++;
 
 
@@ -262,11 +265,6 @@ public class Program {
 
                 int sideTurn = GameState.sideToMove;
 
-
-
-                boolean isMaximizer = (GameState.botSide == 1) ? true : false;
-
-
                 System.out.println("Before: ");
 
                 ChessBoard.printBitBoard(GameState.updatePiecesSum()[2]);
@@ -283,8 +281,6 @@ public class Program {
 
 
                 String finalMove = Lichess.translateMove(move);
-
-                System.out.println(finalMove);
 
 
                 Map<String, String> dic = new HashMap<String, String>();
@@ -359,16 +355,6 @@ public class Program {
         int bestVal = isMaxPlayer ? Integer.MIN_VALUE : Integer.MAX_VALUE;
 
         for(Move m: possibleMoves){
-
-            long[] copy = new long[12];
-
-
-
-
-            for(int l = 0; l < 12; l++){
-                copy[l] = m.bitboardCopys[l];
-            }
-
 
 
             int currValue = miniMax(m,m.castleRightsCopy,m.enPassSquare,depth-1,-1* side,!isMaxPlayer,alpha,beta,moveCt).second();
